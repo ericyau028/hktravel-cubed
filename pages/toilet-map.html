@@ -98,7 +98,7 @@
         });
         data.forEach(function(t) {
           if (t.lat && t.lng) {
-            var icon = L.divIcon({ html: '🚽', className: 'toilet-icon', iconSize: [36, 36] });
+            var icon = L.divIcon({ html: 'WC', className: 'toilet-icon', iconSize: [36, 36] });
             var marker = L.marker([t.lat, t.lng], { icon: icon });
             marker.bindPopup('<div class="popup-name">' + (t.n || '廁所') + '</div><div class="popup-addr">' + (t.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>');
             mcg.addLayer(marker);
