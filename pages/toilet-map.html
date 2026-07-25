@@ -2,71 +2,167 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>香港廁所地圖 — 香港旅遊便利站</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🚽 附近廁所 — 香港旅遊便利站</title>
   <link rel="canonical" href="https://hk.cubedhub.com/pages/toilet-map.html">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Google tag (gtag.js) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
   <style>
-    body { font-family: 'Noto Sans TC', sans-serif; margin: 0; }
-    #map { height: calc(100vh - 120px); width: 100%; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
+    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+    .locate-btn {
+      position: absolute; bottom: 220px; right: 20px; z-index: 1000;
+      background: #fff; border: 2px solid #ddd; border-radius: 50%;
+      width: 50px; height: 50px; font-size: 24px; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
+    }
+    .locate-btn:active { background: #eee; }
+    #nearby-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+      background: #fff; border-radius: 20px 20px 0 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      max-height: 200px; overflow-y: auto; padding: 15px 20px 25px;
+      transition: max-height 0.3s;
+    }
+    #nearby-panel .handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 10px; }
+    .nearby-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+    }
+    .nearby-item:last-child { border-bottom: none; }
+    .nearby-item .num { width: 28px; height: 28px; border-radius: 50%; background: #2563eb; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .nearby-item .info { flex: 1; }
+    .nearby-item .info .name { font-weight: 600; font-size: 15px; }
+    .nearby-item .info .dist { font-size: 12px; color: #888; }
+    .nearby-item .nav-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+    #loading {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000;
+      background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 18px; color: #333; gap: 10px;
+    }
+    #loading .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toilet-icon { background: #2563eb; color: #fff; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    .toilet-icon-pulse { background: #2563eb; color: #fff; border-radius: 8px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(37,99,235,0.5); animation: pulse 1.5s infinite; }
+    @keyframes pulse { to { box-shadow: 0 0 0 15px rgba(37,99,235,0); } }
+    .user-location { background: #059669; border-radius: 50%; width: 20px; height: 20px; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(5,150,105,0.5); animation: pulse-green 1.5s infinite; }
+    @keyframes pulse-green { to { box-shadow: 0 0 0 15px rgba(5,150,105,0); } }
+    .leaflet-popup-content-wrapper { border-radius: 12px !important; font-family: 'Noto Sans TC', sans-serif; }
+    .leaflet-popup-content { font-size: 14px; margin: 10px 14px; }
+    .leaflet-popup-content .popup-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .leaflet-popup-content .popup-addr { color: #666; font-size: 13px; }
+    .leaflet-popup-content .popup-nav { display: inline-block; margin-top: 8px; background: #2563eb; color: #fff; padding: 6px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; }
   </style>
 </head>
-<body class="bg-gray-50">
-  <nav class="bg-white shadow-sm sticky top-0 z-[1000]">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-      <a href="../index.html" class="text-xl font-bold text-blue-600">🇭🇰 香港旅遊便利站</a>
-      <div class="hidden md:flex gap-3 text-sm">
-        <a href="toilet.html" class="text-gray-600 hover:text-blue-600">廁所</a>
-        <a href="wifi.html" class="text-gray-600 hover:text-blue-600">WiFi</a>
-        <a href="luggage.html" class="text-gray-600 hover:text-blue-600">行李</a>
-        <a href="rest.html" class="text-gray-600 hover:text-blue-600">休息</a>
-      </div>
-    </div>
-  </nav>
-
+<body>
+  <div id="loading"><div class="spinner"></div><span>正在定位你的位置...</span></div>
   <div id="map"></div>
+  <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
+  <div id="nearby-panel"><div class="handle"></div><div id="nearby-list"></div></div>
 
   <script>
-    var map = L.map('map').setView([22.3193, 114.1694], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 18
-    }).addTo(map);
+    var map, userMarker, toiletData = [], nearbyPanel = document.getElementById('nearby-list');
+    var loading = document.getElementById('loading');
 
-    var toiletIcon = L.divIcon({
-      html: '🚽',
-      className: '',
-      iconSize: [24, 24]
-    });
+    function initMap(lat, lng) {
+      map = L.map('map', { zoomControl: false }).setView([lat, lng], 17);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+      }).addTo(map);
 
-    fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
-      var bounds = [];
-      data.forEach(function(t) {
-        if (t.lat && t.lng) {
-          var marker = L.marker([t.lat, t.lng], { icon: toiletIcon }).addTo(map);
-          marker.bindPopup('<b>' + (t.n || '廁所') + '</b><br>' + (t.a || ''));
-          bounds.push([t.lat, t.lng]);
-        }
-      });
-      if (bounds.length) { map.fitBounds(bounds); }
-      document.title = '香港廁所地圖 (' + data.length + ' 個) — 香港旅遊便利站';
-    });
+      // User marker
+      userMarker = L.circleMarker([lat, lng], {
+        radius: 10, color: '#059669', fillColor: '#059669', fillOpacity: 1, weight: 3,
+        className: 'user-location'
+      }).addTo(map).bindPopup('📍 你目前的位置');
 
-    // 定位用戶位置
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        var userIcon = L.divIcon({ html: '📍', className: '', iconSize: [24, 24] });
-        L.marker([pos.coords.latitude, pos.coords.longitude], { icon: userIcon }).addTo(map)
-          .bindPopup('你目前的位置').openPopup();
+      // Load toilet data
+      fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
+        toiletData = data;
+        // Cluster group
+        var mcg = L.markerClusterGroup({
+          chunkedLoading: true, maxClusterRadius: 50,
+          iconCreateFunction: function(cluster) {
+            return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
+          }
+        });
+        data.forEach(function(t) {
+          if (t.lat && t.lng) {
+            var icon = L.divIcon({ html: '🚽', className: 'toilet-icon', iconSize: [36, 36] });
+            var marker = L.marker([t.lat, t.lng], { icon: icon });
+            marker.bindPopup('<div class="popup-name">' + (t.n || '廁所') + '</div><div class="popup-addr">' + (t.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>');
+            mcg.addLayer(marker);
+          }
+        });
+        map.addLayer(mcg);
+        showNearest(lat, lng, data);
+        loading.style.display = 'none';
       });
     }
+
+    // Haversine distance
+    function haversine(lat1, lng1, lat2, lng2) {
+      var R = 6371000;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLng = (lng2 - lng1) * Math.PI / 180;
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function showNearest(lat, lng, data) {
+      var withDist = data.map(function(t) {
+        return { item: t, dist: haversine(lat, lng, t.lat, t.lng) };
+      }).sort(function(a, b) { return a.dist - b.dist; });
+
+      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">🚽 離你最近的廁所</div>';
+      withDist.slice(0, 5).forEach(function(d, i) {
+        var meters = Math.round(d.dist);
+        var walkMin = Math.round(d.dist / 80);
+        html += '<div class="nearby-item" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">';
+        html += '<div class="num">' + (i+1) + '</div>';
+        html += '<div class="info"><div class="name">' + (d.item.n || '廁所') + '</div><div class="dist">' + meters + 'm（步行約 ' + walkMin + ' 分鐘）</div></div>';
+        html += '<button class="nav-btn" onclick="event.stopPropagation();window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">導航</button>';
+        html += '</div>';
+      });
+      nearbyPanel.innerHTML = html;
+    }
+
+    // Get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(pos) { initMap(pos.coords.latitude, pos.coords.longitude); },
+        function() { fallbackLocation(); },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    } else { fallbackLocation(); }
+
+    function fallbackLocation() {
+      // Show district selector
+      loading.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:48px;margin-bottom:10px;">📍</div><div style="font-size:16px;margin-bottom:15px;">無法取得你的位置<br>請選擇你所在的區域：</div><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">' +
+        ['尖沙咀',22.3193,114.1694,'中環',22.2820,114.1580,'旺角',22.3196,114.1702,'銅鑼灣',22.2800,114.1830,'灣仔',22.2760,114.1730,'佐敦',22.3040,114.1710,'深水埗',22.3320,114.1620,'沙田',22.3810,114.1880].reduce(function(a,_,i,arr) {
+          if (i%3===0) a.push('<button onclick="initMap('+arr[i+1]+','+arr[i+2]+')" style="padding:10px 18px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;">'+arr[i]+'</button>'); return a;
+        }, []).join('') + '</div></div>';
+    }
+
+    document.getElementById('locateBtn').onclick = function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          map.setView([pos.coords.latitude, pos.coords.longitude], 17);
+          if (userMarker) { userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]); }
+          showNearest(pos.coords.latitude, pos.coords.longitude, toiletData);
+        });
+      }
+    };
   </script>
 </body>
 </html>
