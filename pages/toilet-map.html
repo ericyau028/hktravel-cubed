@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>香港廁所地圖 — 香港旅遊便利站</title>
+  <link rel="canonical" href="https://hk.cubedhub.com/pages/toilet-map.html">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
+  <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; margin: 0; }
+    #map { height: calc(100vh - 120px); width: 100%; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-sm sticky top-0 z-[1000]">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <a href="../index.html" class="text-xl font-bold text-blue-600">🇭🇰 香港旅遊便利站</a>
+      <div class="hidden md:flex gap-3 text-sm">
+        <a href="toilet.html" class="text-gray-600 hover:text-blue-600">廁所</a>
+        <a href="wifi.html" class="text-gray-600 hover:text-blue-600">WiFi</a>
+        <a href="luggage.html" class="text-gray-600 hover:text-blue-600">行李</a>
+        <a href="rest.html" class="text-gray-600 hover:text-blue-600">休息</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="map"></div>
+
+  <script>
+    var map = L.map('map').setView([22.3193, 114.1694], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(map);
+
+    var toiletIcon = L.divIcon({
+      html: '🚽',
+      className: '',
+      iconSize: [24, 24]
+    });
+
+    fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
+      var bounds = [];
+      data.forEach(function(t) {
+        if (t.lat && t.lng) {
+          var marker = L.marker([t.lat, t.lng], { icon: toiletIcon }).addTo(map);
+          marker.bindPopup('<b>' + (t.n || '廁所') + '</b><br>' + (t.a || ''));
+          bounds.push([t.lat, t.lng]);
+        }
+      });
+      if (bounds.length) { map.fitBounds(bounds); }
+      document.title = '香港廁所地圖 (' + data.length + ' 個) — 香港旅遊便利站';
+    });
+
+    // 定位用戶位置
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        var userIcon = L.divIcon({ html: '📍', className: '', iconSize: [24, 24] });
+        L.marker([pos.coords.latitude, pos.coords.longitude], { icon: userIcon }).addTo(map)
+          .bindPopup('你目前的位置').openPopup();
+      });
+    }
+  </script>
+</body>
+</html>
