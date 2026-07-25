@@ -55,8 +55,9 @@
     .toilet-icon { background: #2563eb; color: #fff; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
     .toilet-icon-pulse { background: #2563eb; color: #fff; border-radius: 8px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(37,99,235,0.5); animation: pulse 1.5s infinite; }
     @keyframes pulse { to { box-shadow: 0 0 0 15px rgba(37,99,235,0); } }
-    .user-location { background: #059669; border-radius: 50%; width: 20px; height: 20px; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(5,150,105,0.5); animation: pulse-green 1.5s infinite; }
-    @keyframes pulse-green { to { box-shadow: 0 0 0 15px rgba(5,150,105,0); } }
+    .user-location { background: #059669; border-radius: 50%; width: 20px; height: 20px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
+    .user-location::after { content: ''; position: absolute; width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(5,150,105,0.4); animation: pulse-ring 2s infinite; pointer-events: none; }
+    @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
     .leaflet-popup-content-wrapper { border-radius: 12px !important; font-family: 'Noto Sans TC', sans-serif; }
     .leaflet-popup-content { font-size: 14px; margin: 10px 14px; }
     .leaflet-popup-content .popup-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
@@ -81,10 +82,8 @@
       }).addTo(map);
 
       // User marker
-      userMarker = L.circleMarker([lat, lng], {
-        radius: 10, color: '#059669', fillColor: '#059669', fillOpacity: 1, weight: 3,
-        className: 'user-location'
-      }).addTo(map).bindPopup('📍 你目前的位置');
+      var userIcon = L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup('📍 你目前的位置');
 
       // Load toilet data
       fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
@@ -137,14 +136,25 @@
       nearbyPanel.innerHTML = html;
     }
 
-    // Get user location
+    // Get user location with continuous tracking
+    var watchId = null;
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) { initMap(pos.coords.latitude, pos.coords.longitude); },
-        function() { fallbackLocation(); },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      watchId = navigator.geolocation.watchPosition(
+        function(pos) {
+          var lat = pos.coords.latitude, lng = pos.coords.longitude;
+          if (!map) { initMap(lat, lng); } else {
+            if (userMarker) { userMarker.setLatLng([lat, lng]); }
+            if (toiletData.length) { showNearest(lat, lng, toiletData); }
+          }
+        },
+        function() { if (!map) { fallbackLocation(); } },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );
     } else { fallbackLocation(); }
+
+    function stopTracking() {
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    }
 
     function fallbackLocation() {
       loading.innerHTML = '<div class="spinner"></div><span>正在透過 IP 定位...</span>';
@@ -178,7 +188,7 @@
         navigator.geolocation.getCurrentPosition(function(pos) {
           map.setView([pos.coords.latitude, pos.coords.longitude], 17);
           if (userMarker) { userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]); }
-          showNearest(pos.coords.latitude, pos.coords.longitude, toiletData);
+          if (toiletData.length) { showNearest(pos.coords.latitude, pos.coords.longitude, toiletData); }
         });
       }
     };
