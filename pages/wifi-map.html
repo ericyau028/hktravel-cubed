@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>📶 附近 WiFi — 香港旅遊便利站</title>
+  <link rel="canonical" href="https://hk.cubedhub.com/pages/wifi-map.html">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
+  <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
+    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+    .locate-btn {
+      position: absolute; bottom: 220px; right: 20px; z-index: 1000;
+      background: #fff; border: 2px solid #ddd; border-radius: 50%;
+      width: 50px; height: 50px; font-size: 24px; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
+    }
+    .locate-btn:active { background: #eee; }
+    #nearby-panel {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+      background: #fff; border-radius: 20px 20px 0 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      max-height: 200px; overflow-y: auto; padding: 15px 20px 25px;
+      transition: max-height 0.3s;
+    }
+    #nearby-panel .handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 10px; }
+    .nearby-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+    }
+    .nearby-item:last-child { border-bottom: none; }
+    .nearby-item .num { width: 28px; height: 28px; border-radius: 50%; background: #2563eb; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .nearby-item .info { flex: 1; }
+    .nearby-item .info .name { font-weight: 600; font-size: 15px; }
+    .nearby-item .info .dist { font-size: 12px; color: #888; }
+    .nearby-item .info .ssid { font-size: 11px; color: #2563eb; background: #eef2ff; display: inline-block; padding: 1px 6px; border-radius: 4px; margin-top: 2px; }
+    .nearby-item .nav-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+    #loading {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000;
+      background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 18px; color: #333; gap: 10px;
+    }
+    #loading .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .wifi-icon { background: #2563eb; color: #fff; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    .pulse-dot { width: 10px; height: 10px; background: #2563eb; border-radius: 50%; display: inline-block; margin-right: 4px; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .user-location { background: #059669; border-radius: 50%; width: 20px; height: 20px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
+    .user-location::after { content: ''; position: absolute; width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(5,150,105,0.4); animation: pulse-ring 2s infinite; pointer-events: none; }
+    @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+    .leaflet-popup-content-wrapper { border-radius: 12px !important; font-family: 'Noto Sans TC', sans-serif; }
+    .leaflet-popup-content { font-size: 14px; margin: 10px 14px; }
+    .leaflet-popup-content .popup-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .leaflet-popup-content .popup-addr { color: #666; font-size: 13px; }
+    .leaflet-popup-content .popup-ssid { font-size: 12px; color: #2563eb; margin-top: 2px; }
+    .leaflet-popup-content .popup-nav { display: inline-block; margin-top: 8px; background: #2563eb; color: #fff; padding: 6px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; }
+    #filter-bar {
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
+      background: rgba(255,255,255,0.95); border-radius: 12px; padding: 8px 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; gap: 6px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filter-btn { flex-shrink: 0; padding: 5px 12px; border-radius: 16px; border: 1px solid #ddd; background: #fff; font-size: 12px; cursor: pointer; white-space: nowrap; transition: 0.15s; }
+    .filter-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="loading"><div class="spinner"></div><span>正在載入 WiFi 地圖...</span></div>
+  <div id="filter-bar"></div>
+  <div id="map"></div>
+  <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
+  <div id="nearby-panel"><div class="handle"></div><div id="nearby-list"></div></div>
+
+  <script>
+    var map, userMarker, wifiData = [], filteredData = [], mcg;
+    var loading = document.getElementById('loading');
+    var nearbyPanel = document.getElementById('nearby-list');
+    var filterBar = document.getElementById('filter-bar');
+    var currentFilter = 'all';
+
+    var venueTypes = {
+      'all': '全部', 'Stores/Shopping Malls': '商場', 'Sports, Cultural & Recreational Venues': '文康',
+      'Food & Beverage': '餐飲', 'Government Buildings & Offices': '政府', 'Entertainment & Leisure': '娛樂',
+      'Convenience Stores': '便利店', 'Transportation': '交通', 'Public Rental Housing': '公屋',
+      'Hotels/Guesthouses': '酒店', 'Hospitals & Clinics': '醫療', 'University': '大學'
+    };
+
+    function classifyVenue(en) {
+      if (!en) return 'Others';
+      if (en.includes('Stores') || en.includes('Shopping')) return 'Stores/Shopping Malls';
+      if (en.includes('Sports') || en.includes('Recreational') || en.includes('Cultural')) return 'Sports, Cultural & Recreational Venues';
+      if (en.includes('Food') || en.includes('Beverage')) return 'Food & Beverage';
+      if (en.includes('Government') || en.includes('Office')) return 'Government Buildings & Offices';
+      if (en.includes('Entertainment') || en.includes('Leisure')) return 'Entertainment & Leisure';
+      if (en.includes('Convenience')) return 'Convenience Stores';
+      if (en.includes('Transportation') || en.includes('Boundary')) return 'Transportation';
+      if (en.includes('Public Rental') || en.includes('Estate')) return 'Public Rental Housing';
+      if (en.includes('Hotel') || en.includes('Guesthouse')) return 'Hotels/Guesthouses';
+      if (en.includes('Hospital') || en.includes('Clinic')) return 'Hospitals & Clinics';
+      if (en.includes('University')) return 'University';
+      return 'Others';
+    }
+
+    function initMap(lat, lng) {
+      map = L.map('map', { zoomControl: false }).setView([lat, lng], 16);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19, attribution: '&copy; OSM | CARTO'
+      }).addTo(map);
+
+      var userIcon = L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup('📍 你目前的位置');
+
+      // Load WiFi data
+      fetch('../data/wifi.json').then(function(r) { return r.json(); }).then(function(data) {
+        wifiData = data;
+        filteredData = data;
+        buildFilterBar();
+        renderMarkers();
+        showNearest(lat, lng, data);
+        loading.style.display = 'none';
+      });
+    }
+
+    function buildFilterBar() {
+      var counts = {};
+      wifiData.forEach(function(w) { var k = classifyVenue(w.t); counts[k] = (counts[k] || 0) + 1; });
+      var html = '<button class="filter-btn active" data-type="all">全部 (' + wifiData.length + ')</button>';
+      Object.keys(venueTypes).forEach(function(k) {
+        if (k === 'all') return;
+        var c = counts[k] || 0;
+        if (c > 0) html += '<button class="filter-btn" data-type="' + k + '">' + (venueTypes[k] || k) + ' (' + c + ')</button>';
+      });
+      filterBar.innerHTML = html;
+      filterBar.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.onclick = function() {
+          filterBar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          currentFilter = btn.dataset.type;
+          renderMarkers();
+          if (userMarker) { showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData); }
+        };
+      });
+    }
+
+    function renderMarkers() {
+      if (mcg) { map.removeLayer(mcg); }
+      filteredData = currentFilter === 'all' ? wifiData : wifiData.filter(function(w) { return classifyVenue(w.t) === currentFilter; });
+
+      mcg = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50,
+        iconCreateFunction: function(cluster) {
+          return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
+        }
+      });
+
+      filteredData.forEach(function(w) {
+        if (w.lat && w.lng) {
+          var icon = L.divIcon({ html: '📶', className: 'wifi-icon', iconSize: [36, 36] });
+          var marker = L.marker([w.lat, w.lng], { icon: icon });
+          marker.bindPopup('<div class="popup-name">' + (w.n || 'WiFi 熱點') + '</div><div class="popup-ssid">📶 ' + (w.s || '') + (w.h > 1 ? ' (' + w.h + ' 個熱點)' : '') + '</div><div class="popup-addr">' + (w.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + w.lat + ',' + w.lng + '" target="_blank">🗺️ Google 導航</a>');
+          mcg.addLayer(marker);
+        }
+      });
+      map.addLayer(mcg);
+    }
+
+    function haversine(lat1, lng1, lat2, lng2) {
+      var R = 6371000;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLng = (lng2 - lng1) * Math.PI / 180;
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function showNearest(lat, lng, data) {
+      var list = data.map(function(w) { return { item: w, dist: haversine(lat, lng, w.lat, w.lng) }; }).sort(function(a, b) { return a.dist - b.dist; });
+      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">📶 離你最近的 WiFi</div>';
+      list.slice(0, 5).forEach(function(d, i) {
+        var meters = Math.round(d.dist);
+        var walkMin = Math.round(d.dist / 80);
+        html += '<div class="nearby-item" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">';
+        html += '<div class="num">' + (i+1) + '</div>';
+        html += '<div class="info"><div class="name">' + (d.item.n || 'WiFi 熱點') + '</div><div class="dist">' + meters + 'm（步行約 ' + walkMin + ' 分鐘） <span class="ssid">' + (d.item.s || '') + '</span></div></div>';
+        html += '<button class="nav-btn" onclick="event.stopPropagation();window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">導航</button>';
+        html += '</div>';
+      });
+      nearbyPanel.innerHTML = html;
+    }
+
+    // Get user location
+    var watchId = null;
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        function(pos) {
+          var lat = pos.coords.latitude, lng = pos.coords.longitude;
+          if (!map) { initMap(lat, lng); } else {
+            if (userMarker) { userMarker.setLatLng([lat, lng]); }
+            if (wifiData.length) { showNearest(lat, lng, filteredData.length ? filteredData : wifiData); }
+          }
+        },
+        function() { if (!map) { fallbackLocation(); } },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      );
+    } else { fallbackLocation(); }
+
+    function fallbackLocation() {
+      loading.innerHTML = '<div class="spinner"></div><span>正在透過 IP 定位...</span>';
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://ipapi.co/json/', true);
+      xhr.timeout = 5000;
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var ip = JSON.parse(xhr.responseText);
+          if (ip.latitude && ip.longitude && ip.city) {
+            initMap(ip.latitude, ip.longitude);
+            return;
+          }
+        }
+        showDistrictPicker();
+      };
+      xhr.onerror = showDistrictPicker;
+      xhr.ontimeout = showDistrictPicker;
+      xhr.send();
+    }
+
+    function showDistrictPicker() {
+      loading.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:48px;margin-bottom:10px;">📍</div><div style="font-size:16px;margin-bottom:15px;">無法取得你的位置<br>請選擇你所在的區域：</div><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">' +
+        ['尖沙咀',22.3193,114.1694,'中環',22.2820,114.1580,'旺角',22.3196,114.1702,'銅鑼灣',22.2800,114.1830,'灣仔',22.2760,114.1730,'佐敦',22.3040,114.1710,'深水埗',22.3320,114.1620,'沙田',22.3810,114.1880].reduce(function(a,_,i,arr) {
+          if (i%3===0) a.push('<button onclick="initMap('+arr[i+1]+','+arr[i+2]+')" style="padding:10px 18px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;">'+arr[i]+'</button>'); return a;
+        }, []).join('') + '</div></div>';
+    }
+
+    document.getElementById('locateBtn').onclick = function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+          if (userMarker) { userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]); }
+          var data = filteredData.length ? filteredData : wifiData;
+          if (data.length) { showNearest(pos.coords.latitude, pos.coords.longitude, data); }
+        });
+      }
+    };
+  </script>
+</body>
+</html>
