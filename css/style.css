@@ -449,9 +449,7 @@ footer a {
 .box-net {
   display: grid;
   gap: 4px;
-  border: 2px solid var(--kraft-dark);
-  border-radius: 8px;
-  padding: 4px;
+  padding: 0;
 }
 
 .box-net-6 {
@@ -472,7 +470,7 @@ footer a {
 
 .box-card {
   background: transparent;
-  border: 1.5px dashed rgba(160,120,90,0.35);
+  border: 1.5px dashed var(--kraft-dark);
   border-radius: 6px;
   padding: 20px 10px;
   text-align: center;
