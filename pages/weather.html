@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🌤️ 香港天氣 — 香港旅遊便利站</title>
+  <meta name="description" content="香港天氣即時資訊 — 溫度、濕度、紫外線指數、降雨量、九天預報">
+  <link rel="canonical" href="https://hk.cubedhub.com/pages/weather.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-132PFXDSM9');
+  </script>
+  <style>
+    .spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      gap: 16px;
+    }
+    .spinner-ring {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .weather-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      color: #dc2626;
+      font-size: 0.9rem;
+      margin: 16px 0;
+    }
+    .weather-error.show { display: block; }
+    .weather-content { display: none; }
+    .weather-content.show { display: block; }
+    .weather-updatetime {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+    .weather-warnings {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .weather-warnings p {
+      font-size: 0.85rem;
+      color: #dc2626;
+      font-weight: 500;
+    }
+    .weather-warnings li {
+      font-size: 0.82rem;
+      color: #b91c1c;
+      margin-top: 4px;
+      list-style: disc;
+      margin-left: 18px;
+    }
+    .current-card {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #3b82f6 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+    .current-emoji {
+      font-size: 4rem;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .current-temp {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .current-temp-unit {
+      font-size: 1.4rem;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+    .current-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .current-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .current-stat-label {
+      font-size: 0.7rem;
+      opacity: 0.75;
+      font-weight: 500;
+    }
+    .current-stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .current-stat-sub {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+    .forecast-today-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .forecast-today-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .forecast-today-card p {
+      font-size: 0.88rem;
+      color: var(--gray-600);
+      line-height: 1.7;
+    }
+    .forecast-today-card .outlook {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--gray-200);
+      font-size: 0.85rem;
+      color: var(--gray-500);
+    }
+    .forecast-today-card .outlook strong {
+      color: var(--gray-700);
+    }
+    .forecast-9-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .forecast-grid {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .forecast-grid::-webkit-scrollbar { height: 4px; }
+    .forecast-grid::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+    .forecast-day {
+      flex: 0 0 110px;
+      scroll-snap-align: start;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 14px 10px;
+      text-align: center;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .forecast-day .day-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gray-700);
+    }
+    .forecast-day .day-date {
+      font-size: 0.65rem;
+      color: var(--gray-400);
+    }
+    .forecast-day .day-emoji {
+      font-size: 1.8rem;
+      margin: 4px 0;
+    }
+    .forecast-day .day-temp {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+    .forecast-day .day-temp-range {
+      font-size: 0.7rem;
+      color: var(--gray-500);
+    }
+    .forecast-day .day-psr {
+      font-size: 0.6rem;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    .retry-btn {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+    }
+    .retry-btn:hover { background: var(--blue-dark); }
+    .general-situation {
+      background: var(--blue-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+    .general-situation strong {
+      color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <a href="#" lang="zh-Hant">繁體</a>
+      <a href="#" lang="zh-Hans">簡體</a>
+    </div>
+  </div>
+
+  <nav>
+    <div class="container">
+      <a href="../index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
+      <button class="nav-toggle" aria-label="選單">☰</button>
+      <div class="nav-menu">
+        <a href="../index.html"><span class="nav-icon">🏠</span> 首頁</a>
+        <a href="toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
+        <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
+        <a href="rest.html"><span class="nav-icon">🪑</span> 休息</a>
+        <div class="nav-more">
+          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <div class="nav-more-items">
+            <a href="hospitals.html">🏥 診所</a>
+            <a href="carparks.html">🅿️ 停車場</a>
+            <a href="taxistands.html">🚕 的士站</a>
+            <a href="ferries.html">⛴️ 渡輪碼頭</a>
+            <a href="postoffices.html">📮 郵政局</a>
+            <a href="beaches.html">🏖️ 泳灘</a>
+            <a href="weather.html" class="active">🌤️ 天氣</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="../index.html">首頁</a> &gt; <span>🌤️ 香港天氣</span>
+      </div>
+      <h2>🌤️ 香港天氣</h2>
+      <p>香港天文台即時天氣資料 — 溫度、濕度、紫外線、降雨、九天預報</p>
+    </div>
+  </section>
+
+  <main class="container" style="padding-bottom:24px;">
+    <div class="ad-placeholder">📢 廣告招商 — 你的廣告在這裡</div>
+
+    <div id="spinner" class="spinner">
+      <div class="spinner-ring"></div>
+      <span style="font-size:0.85rem;color:var(--gray-500);">載入天氣資料中...</span>
+    </div>
+
+    <div id="errorContainer" class="weather-error">
+      <p>⚠️ 無法載入天氣資料</p>
+      <p style="font-size:0.82rem;color:#9ca3af;margin-top:4px;" id="errorMessage"></p>
+      <button class="retry-btn" onclick="loadWeather()">重新載入</button>
+    </div>
+
+    <div id="weatherContent" class="weather-content">
+
+      <div id="warningsContainer" class="weather-warnings" style="display:none;"></div>
+
+      <div id="updateTime" class="weather-updatetime"></div>
+
+      <div id="currentWeather" class="current-card"></div>
+
+      <div id="forecastToday" class="forecast-today-card"></div>
+
+      <div id="generalSituation" class="general-situation"></div>
+
+      <h3 class="forecast-9-title">📅 九天預報</h3>
+      <div id="forecast9" class="forecast-grid"></div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© 2026 香港旅遊便利站 | 資料來源：香港天文台開放資料 API</p>
+      <div class="footer-links">
+        <a href="../index.html">首頁</a>
+        <a href="toilet.html">廁所</a>
+        <a href="wifi.html">WiFi</a>
+        <a href="rest.html">休息</a>
+        <a href="hospitals.html">診所</a>
+        <a href="carparks.html">停車場</a>
+        <a href="taxistands.html">的士站</a>
+        <a href="ferries.html">渡輪碼頭</a>
+        <a href="postoffices.html">郵政局</a>
+        <a href="beaches.html">泳灘</a>
+        <a href="weather.html">天氣</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function getEmojiFromIcon(code) {
+      var map = {
+        50: '\u2600\ufe0f', 51: '\u2600\ufe0f', 52: '\uD83C\uDF24', 53: '\uD83C\uDF24',
+        54: '\u26C5', 55: '\u2601\ufe0f', 56: '\u2601\ufe0f', 57: '\u2601\ufe0f',
+        58: '\uD83C\uDF27', 59: '\uD83C\uDF27', 60: '\u26C8', 61: '\u26C8',
+        62: '\uD83C\uDF27', 63: '\uD83C\uDF27', 64: '\u26C8', 65: '\uD83D\uDCA8',
+        70: '\uD83C\uDF28', 71: '\uD83C\uDF28', 72: '\u2744\ufe0f', 73: '\u2744\ufe0f',
+        74: '\uD83C\uDF2B', 75: '\uD83C\uDF2B', 76: '\uD83C\uDF2B', 77: '\uD83C\uDF2B',
+        80: '\u2600\ufe0f', 81: '\u2600\ufe0f', 82: '\uD83C\uDF24', 83: '\uD83C\uDF24',
+        84: '\u26C5', 85: '\u2601\ufe0f', 86: '\u2601\ufe0f', 87: '\uD83C\uDF27',
+        90: '\uD83C\uDF27', 91: '\u26C8', 92: '\u26C8', 93: '\uD83C\uDF27'
+      };
+      return map[code] || '\uD83C\uDF24';
+    }
+
+    function getEmojiFromText(text) {
+      if (!text) return '\uD83C\uDF24';
+      if (text.indexOf('\u96F7\u66B4') !== -1 || text.indexOf('\u96F7\u96E8') !== -1) return '\u26C8';
+      if (text.indexOf('\u5927\u96E8') !== -1 || text.indexOf('\u66B4\u96E8') !== -1) return '\uD83C\uDF27';
+      if (text.indexOf('\u96E8') !== -1) return '\uD83C\uDF27';
+      if (text.indexOf('\u6674') !== -1 || text.indexOf('\u967D\u5149') !== -1) return '\u2600\ufe0f';
+      if (text.indexOf('\u591A\u96F2') !== -1) return '\u2601\ufe0f';
+      if (text.indexOf('\u98A8') !== -1) return '\uD83D\uDCA8';
+      if (text.indexOf('\u9727') !== -1) return '\uD83C\uDF2B';
+      return '\uD83C\uDF24';
+    }
+
+    function formatDate(dateStr) {
+      var y = dateStr.substring(0, 4);
+      var m = dateStr.substring(4, 6);
+      var d = dateStr.substring(6, 8);
+      return m + '/' + d;
+    }
+
+    function formatUpdateTime(isoStr) {
+      if (!isoStr) return '';
+      try {
+        var d = new Date(isoStr);
+        var h = d.getHours().toString().padStart(2, '0');
+        var m = d.getMinutes().toString().padStart(2, '0');
+        return '\u66F4\u65B0\u6642\u9593\uFF1A' + d.getFullYear() + '\u5E74' + (d.getMonth()+1) + '\u6708' + d.getDate() + '\u65E5 ' + h + ':' + m;
+      } catch(e) {
+        return '\u66F4\u65B0\u6642\u9593\uFF1A' + isoStr;
+      }
+    }
+
+    function loadWeather() {
+      var spinner = document.getElementById('spinner');
+      var errorContainer = document.getElementById('errorContainer');
+      var weatherContent = document.getElementById('weatherContent');
+
+      spinner.style.display = 'flex';
+      errorContainer.classList.remove('show');
+      weatherContent.classList.remove('show');
+
+      var rhrreadUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc';
+      var fndUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=tc';
+
+      Promise.all([
+        fetch(rhrreadUrl).then(function(r) { if (!r.ok) throw new Error('Current weather API error'); return r.json(); }),
+        fetch(fndUrl).then(function(r) { if (!r.ok) throw new Error('Forecast API error'); return r.json(); })
+      ]).then(function(results) {
+        var rhr = results[0];
+        var fnd = results[1];
+
+        var currentTemp = null;
+        if (rhr.temperature && rhr.temperature.data && rhr.temperature.data.length > 0) {
+          for (var i = 0; i < rhr.temperature.data.length; i++) {
+            if (rhr.temperature.data[i].place === '\u9999\u6E2F\u5929\u6587\u53F0') {
+              currentTemp = rhr.temperature.data[i];
+              break;
+            }
+          }
+          if (!currentTemp) currentTemp = rhr.temperature.data[0];
+        }
+
+        var humidity = null;
+        if (rhr.humidity && rhr.humidity.data && rhr.humidity.data.length > 0) {
+          humidity = rhr.humidity.data[0];
+        }
+
+        var uvIndex = null;
+        if (rhr.uvindex && rhr.uvindex.data && rhr.uvindex.data.length > 0) {
+          uvIndex = rhr.uvindex.data[0];
+        }
+
+        var rainfallData = null;
+        var maxRainfall = 0;
+        if (rhr.rainfall && rhr.rainfall.data && rhr.rainfall.data.length > 0) {
+          rainfallData = rhr.rainfall.data;
+          for (var i = 0; i < rainfallData.length; i++) {
+            var val = parseFloat(rainfallData[i].max) || 0;
+            if (val > maxRainfall) maxRainfall = val;
+          }
+        }
+
+        var currentIcon = null;
+        if (rhr.icon && rhr.icon.length > 0) {
+          currentIcon = rhr.icon[0];
+        }
+
+        var rhrUpdateTime = rhr.updateTime || '';
+        var fndUpdateTime = fnd.updateTime || '';
+
+        var warnings = rhr.warningMessage || [];
+
+        var updateTimeStr = rhrUpdateTime;
+
+        var emoji = currentIcon ? getEmojiFromIcon(currentIcon) : '\uD83C\uDF24';
+
+        var currentHtml = '';
+        currentHtml += '<span class="current-emoji">' + emoji + '</span>';
+        if (currentTemp) {
+          currentHtml += '<div class="current-temp">' + currentTemp.value + '<span class="current-temp-unit">\u00B0C</span></div>';
+        } else {
+          currentHtml += '<div class="current-temp">--<span class="current-temp-unit">\u00B0C</span></div>';
+        }
+        currentHtml += '<div class="current-stats">';
+
+        if (humidity) {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">\u6FD5\u5EA6</span><span class="current-stat-value">' + humidity.value + '%</span></div>';
+        } else {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">\u6FD5\u5EA6</span><span class="current-stat-value">--</span></div>';
+        }
+
+        if (uvIndex) {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">UV\u6307\u6570</span><span class="current-stat-value">' + uvIndex.value + '</span><span class="current-stat-sub">' + (uvIndex.desc || '') + '</span></div>';
+        } else {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">UV\u6307\u6570</span><span class="current-stat-value">--</span></div>';
+        }
+
+        if (rainfallData) {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">\u964D\u96E8\u91CF</span><span class="current-stat-value">' + maxRainfall.toFixed(1) + 'mm</span><span class="current-stat-sub">\u5404\u5340\u6700\u5927</span></div>';
+        } else {
+          currentHtml += '<div class="current-stat"><span class="current-stat-label">\u964D\u96E8\u91CF</span><span class="current-stat-value">--</span></div>';
+        }
+
+        currentHtml += '</div>';
+
+        document.getElementById('currentWeather').innerHTML = currentHtml;
+        document.getElementById('updateTime').textContent = formatUpdateTime(updateTimeStr);
+
+        if (warnings && warnings.length > 0) {
+          var warnHtml = '<p>\u26A0\ufe0f \u5929\u6587\u53F0\u8B66\u544A</p><ul>';
+          for (var i = 0; i < warnings.length; i++) {
+            warnHtml += '<li>' + warnings[i] + '</li>';
+          }
+          warnHtml += '</ul>';
+          var warnContainer = document.getElementById('warningsContainer');
+          warnContainer.innerHTML = warnHtml;
+          warnContainer.style.display = 'block';
+        } else {
+          document.getElementById('warningsContainer').style.display = 'none';
+        }
+
+        var todayHtml = '';
+        if (fnd.weatherForecast && fnd.weatherForecast.length > 0) {
+          var today = fnd.weatherForecast[0];
+          var todayEmoji = getEmojiFromIcon(today.ForecastIcon);
+          todayHtml += '<h3>' + todayEmoji + ' ' + today.week + ' (' + formatDate(today.forecastDate) + ') \u5929\u6C23\u9810\u5831</h3>';
+          todayHtml += '<p>' + today.forecastWeather + '</p>';
+          if (today.forecastWind) {
+            todayHtml += '<p style="margin-top:6px;font-size:0.82rem;color:var(--gray-500);">\u98A8\u5411\uFF1A' + today.forecastWind + '</p>';
+          }
+          if (today.forecastMinrh && today.forecastMaxrh) {
+            todayHtml += '<p style="margin-top:4px;font-size:0.82rem;color:var(--gray-500);">\u6FD5\u5EA6\uFF1A' + today.forecastMinrh.value + '-' + today.forecastMaxrh.value + '%</p>';
+          }
+          if (fnd.generalSituation) {
+            document.getElementById('generalSituation').innerHTML = '<strong>\u5927\u5F62\u52E2\uFF1A</strong>' + fnd.generalSituation;
+          }
+        }
+        document.getElementById('forecastToday').innerHTML = todayHtml;
+
+        var forecast9Html = '';
+        if (fnd.weatherForecast && fnd.weatherForecast.length > 0) {
+          for (var i = 0; i < fnd.weatherForecast.length; i++) {
+            var day = fnd.weatherForecast[i];
+            var dEmoji = getEmojiFromIcon(day.ForecastIcon);
+            var dateLabel = formatDate(day.forecastDate);
+            forecast9Html += '<div class="forecast-day">';
+            forecast9Html += '<div class="day-name">' + day.week + '</div>';
+            forecast9Html += '<div class="day-date">' + dateLabel + '</div>';
+            forecast9Html += '<div class="day-emoji">' + dEmoji + '</div>';
+            forecast9Html += '<div class="day-temp">' + day.forecastMintemp.value + '\u00B0 / ' + day.forecastMaxtemp.value + '\u00B0</div>';
+            forecast9Html += '<div class="day-temp-range">\u6700\u4F4E\uFF5E\u6700\u9AD8</div>';
+            if (day.PSR) {
+              forecast9Html += '<div class="day-psr">\u964D\u96E8\uFF1A' + day.PSR + '</div>';
+            }
+            forecast9Html += '</div>';
+          }
+        } else {
+          forecast9Html = '<p style="color:var(--gray-500);font-size:0.85rem;">\u6682\u7121\u4E5D\u5929\u9810\u5831\u6578\u64DA</p>';
+        }
+        document.getElementById('forecast9').innerHTML = forecast9Html;
+
+        spinner.style.display = 'none';
+        weatherContent.classList.add('show');
+
+      }).catch(function(err) {
+        spinner.style.display = 'none';
+        document.getElementById('errorMessage').textContent = err.message || '\u8ACB\u7A0D\u5F8C\u518D\u8A66';
+        errorContainer.classList.add('show');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadWeather);
+
+    document.querySelector('.nav-toggle').addEventListener('click', function() {
+      document.querySelector('.nav-menu').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

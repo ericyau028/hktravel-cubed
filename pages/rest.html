@@ -30,6 +30,18 @@
         <a href="toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
         <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
         <a href="rest.html" class="active"><span class="nav-icon">🪑</span> 休息</a>
+        <div class="nav-more">
+          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <div class="nav-more-items">
+            <a href="hospitals.html">🏥 診所</a>
+            <a href="carparks.html">🅿️ 停車場</a>
+            <a href="taxistands.html">🚕 的士站</a>
+            <a href="ferries.html">⛴️ 渡輪碼頭</a>
+            <a href="postoffices.html">📮 郵政局</a>
+            <a href="beaches.html">🏖️ 泳灘</a>
+            <a href="weather.html">🌤️ 天氣</a>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -40,7 +52,7 @@
         <a href="../index.html">首頁</a> &gt; <span>🪑 休息區</span>
       </div>
       <h2>🪑 香港休息區指南</h2>
-      <p>全港 2685 個公共休息點 — 商場、公園、圖書館、休憩處、社區中心，使用地政總署開放數據</p>
+      <p>全港 2687 個公共休息點 — 商場、公園、圖書館、休憩處、社區中心、主題樂園，使用地政總署開放數據</p>
     </div>
   </section>
 
@@ -78,14 +90,18 @@
         <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🏛️ 404</div>
         <div style="font-size:0.78rem;color:var(--gray-500);">個社區中心</div>
       </div>
+      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🎢 2</div>
+        <div style="font-size:0.78rem;color:var(--gray-500);">個主題樂園</div>
+      </div>
       <div style="background:var(--blue);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;color:#fff;">
-        <div style="font-size:1.3rem;font-weight:700;">📍 2685</div>
+        <div style="font-size:1.3rem;font-weight:700;">📍 2687</div>
         <div style="font-size:0.78rem;opacity:0.9;">個休息點</div>
       </div>
     </div>
 
     <p style="font-size:0.85rem;color:var(--gray-600);line-height:1.7;margin-bottom:16px;">
-      本指南使用香港地政總署 iGeoCom 社區地理資料庫的開放數據，整理出全港 2685 個可供公眾休息的地點，涵蓋商場、公園、圖書館、休憩處及社區中心五大類別。無論你想找個冷氣開放的商場唞一唞，還是在公園長椅上享受微風，這份指南都能幫到你。
+      本指南使用香港地政總署 iGeoCom 社區地理資料庫的開放數據，整理出全港 2687 個可供公眾休息的地點，涵蓋商場、公園、圖書館、休憩處、社區中心及主題樂園六大類別。無論你想找個冷氣開放的商場唞一唞，還是在公園長椅上享受微風，這份指南都能幫到你。
     </p>
 
     <div class="ad-placeholder">📢 廣告招商 — 你的廣告在這裡</div>
@@ -94,12 +110,19 @@
   <footer>
     <div class="container">
       <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
-      <p style="margin-top:4px;font-size:0.75rem;">
-        <a href="../index.html">首頁</a> &middot;
-        <a href="toilet.html">廁所</a> &middot;
-        <a href="wifi.html">WiFi</a> &middot;
+      <div class="footer-links">
+        <a href="../index.html">首頁</a>
+        <a href="toilet.html">廁所</a>
+        <a href="wifi.html">WiFi</a>
         <a href="rest.html">休息</a>
-      </p>
+        <a href="hospitals.html">診所</a>
+        <a href="carparks.html">停車場</a>
+        <a href="taxistands.html">的士站</a>
+        <a href="ferries.html">渡輪碼頭</a>
+        <a href="postoffices.html">郵政局</a>
+        <a href="beaches.html">泳灘</a>
+        <a href="weather.html">天氣</a>
+      </div>
     </div>
   </footer>
 </body>

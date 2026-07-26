@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>香港旅遊便利站 | 廁所・WiFi・行李寄存・休息區</title>
-  <meta name="description" content="香港旅遊便利站 - 為旅客提供香港公共廁所、免費 WiFi、行李寄存、休息區資訊，一站解決旅途不便。">
+  <title>香港旅遊便利站 | 廁所・WiFi・休息・診所・停車場・天氣</title>
+  <meta name="description" content="香港旅遊便利站 - 一站式提供廁所、免費WiFi、休息區、診所、停車場、的士站、渡輪碼頭、郵政局、泳灘及即時天氣資訊，讓你在香港旅遊更方便。">
+  <link rel="canonical" href="https://hk.cubedhub.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script src="js/main.js" defer></script>
 </head>
 <body>
-  <!-- Top Bar -->
   <div class="top-bar">
     <div class="container">
       <a href="#" lang="zh-Hant">繁體</a>
@@ -23,7 +21,6 @@
     </div>
   </div>
 
-  <!-- Navigation -->
   <nav>
     <div class="container">
       <a href="index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
@@ -33,50 +30,87 @@
         <a href="pages/toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
         <a href="pages/wifi.html"><span class="nav-icon">📶</span> WiFi</a>
         <a href="pages/rest.html"><span class="nav-icon">🪑</span> 休息</a>
+        <div class="nav-more">
+          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <div class="nav-more-items">
+            <a href="pages/hospitals.html">🏥 診所</a>
+            <a href="pages/carparks.html">🅿️ 停車場</a>
+            <a href="pages/taxistands.html">🚕 的士站</a>
+            <a href="pages/ferries.html">⛴️ 渡輪碼頭</a>
+            <a href="pages/postoffices.html">📮 郵政局</a>
+            <a href="pages/beaches.html">🏖️ 泳灘</a>
+            <a href="pages/weather.html">🌤️ 天氣</a>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <section class="hero">
+  <section class="hero hero-box">
     <div class="container">
       <h1>香港旅遊便利站</h1>
-      <p>廁所、WiFi、行李寄存、休息區 — 一站式解決你的旅途不便</p>
-      <div class="hero-sub">
-        <span>🚽 找廁所</span>
-        <span>📶 免費 WiFi</span>
-        <span>🧳 行李寄存</span>
-        <span>🪑 休息區</span>
-      </div>
+      <p>打開便利寶盒 · 暢遊香港無障礙</p>
     </div>
   </section>
 
   <main class="container">
-    <!-- Card Grid -->
-    <div class="card-grid">
-      <a href="pages/toilet.html" class="card card-blue">
-        <div class="card-icon">🚽</div>
-        <h3>找廁所</h3>
-        <p>尖沙咀、中環、旺角等主要旅遊區公廁位置與評價</p>
+    <div class="box-net">
+      <a href="pages/toilet.html" class="box-card" style="--c:#2563eb;--l:#dbeafe;">
+        <div class="box-card-icon">🚽</div>
+        <div class="box-card-title">廁所</div>
+        <div class="box-card-desc">公廁位置與評價</div>
       </a>
-      <a href="pages/wifi.html" class="card card-green">
-        <div class="card-icon">📶</div>
-        <h3>免費 WiFi</h3>
-        <p>GovWiFi、商場、咖啡店免費上網熱點</p>
+      <a href="pages/wifi.html" class="box-card" style="--c:#059669;--l:#d1fae5;">
+        <div class="box-card-icon">📶</div>
+        <div class="box-card-title">WiFi</div>
+        <div class="box-card-desc">免費上網熱點</div>
       </a>
-      <a href="pages/rest.html" class="card card-blue">
-        <div class="card-icon">🪑</div>
-        <h3>休息區</h3>
-        <p>商場座椅、公園、冷氣開放室內休息點</p>
+      <a href="pages/rest.html" class="box-card" style="--c:#7c3aed;--l:#ede9fe;">
+        <div class="box-card-icon">🪑</div>
+        <div class="box-card-title">休息區</div>
+        <div class="box-card-desc">商場公園圖書館休息點</div>
+      </a>
+      <a href="pages/hospitals.html" class="box-card" style="--c:#dc2626;--l:#fee2e2;">
+        <div class="box-card-icon">🏥</div>
+        <div class="box-card-title">診所</div>
+        <div class="box-card-desc">醫院診所位置</div>
+      </a>
+      <a href="pages/carparks.html" class="box-card box-card-front" style="--c:#1e3a5f;--l:#dbeafe;">
+        <div class="box-card-icon">🅿️</div>
+        <div class="box-card-title">停車場</div>
+        <div class="box-card-desc">停車場位置</div>
+      </a>
+      <a href="pages/taxistands.html" class="box-card" style="--c:#d97706;--l:#fef3c7;">
+        <div class="box-card-icon">🚕</div>
+        <div class="box-card-title">的士站</div>
+        <div class="box-card-desc">的士站位置</div>
+      </a>
+      <a href="pages/ferries.html" class="box-card" style="--c:#0ea5e9;--l:#e0f2fe;">
+        <div class="box-card-icon">⛴️</div>
+        <div class="box-card-title">渡輪碼頭</div>
+        <div class="box-card-desc">渡輪碼頭位置</div>
+      </a>
+      <a href="pages/postoffices.html" class="box-card" style="--c:#dc2626;--l:#fee2e2;">
+        <div class="box-card-icon">📮</div>
+        <div class="box-card-title">郵政局</div>
+        <div class="box-card-desc">郵政局位置</div>
+      </a>
+      <a href="pages/beaches.html" class="box-card" style="--c:#b45309;--l:#fef3c7;">
+        <div class="box-card-icon">🏖️</div>
+        <div class="box-card-title">泳灘</div>
+        <div class="box-card-desc">泳灘位置</div>
+      </a>
+      <a href="pages/weather.html" class="box-card box-card-weather" style="--l:#fef9c3;">
+        <div class="box-card-icon">🌤️</div>
+        <div class="box-card-title">天氣</div>
+        <div class="box-card-desc">即時天氣</div>
       </a>
     </div>
 
-    <!-- Ad -->
     <div class="ad-placeholder">
       📢 廣告招商 — 你的廣告在這裡 (請聯繫我們)
     </div>
 
-    <!-- Quick Tips -->
     <section style="padding: 16px 0 24px;">
       <h3 style="font-size:1.1rem; margin-bottom:12px; color:var(--gray-700);">💡 旅客小貼士</h3>
       <div style="display:flex;flex-direction:column;gap:8px;">
@@ -87,22 +121,28 @@
           <strong>📶 免費 WiFi</strong> 政府 GovWiFi 覆蓋主要景點，每次連線 45 分鐘
         </div>
         <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;">
-          <strong>🧳 行李不求人</strong> 大部分商場提供自助儲物櫃，約 $10-20/小時
+          <strong>🅿️ 泊車</strong> 停車場繁忙時段可選附近月租車位，節省等候時間
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div class="container">
       <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
-      <p style="margin-top:4px;font-size:0.75rem;">
-        <a href="index.html">首頁</a> &middot;
-        <a href="pages/toilet.html">廁所</a> &middot;
-        <a href="pages/wifi.html">WiFi</a> &middot;
+      <div class="footer-links">
+        <a href="index.html">首頁</a>
+        <a href="pages/toilet.html">廁所</a>
+        <a href="pages/wifi.html">WiFi</a>
         <a href="pages/rest.html">休息</a>
-      </p>
+        <a href="pages/hospitals.html">診所</a>
+        <a href="pages/carparks.html">停車場</a>
+        <a href="pages/taxistands.html">的士站</a>
+        <a href="pages/ferries.html">渡輪碼頭</a>
+        <a href="pages/postoffices.html">郵政局</a>
+        <a href="pages/beaches.html">泳灘</a>
+        <a href="pages/weather.html">天氣</a>
+      </div>
     </div>
   </footer>
 </body>

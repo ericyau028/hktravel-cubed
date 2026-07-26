@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>🚽 附近廁所 — 香港旅遊便利站</title>
-  <link rel="canonical" href="https://hk.cubedhub.com/pages/toilet-map.html">
+  <title>🏥 附近醫院診所 — 香港旅遊便利站</title>
+  <link rel="canonical" href="https://hk.cubedhub.com/pages/hospitals.html">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
@@ -14,7 +14,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
   <style>
@@ -45,6 +44,7 @@
     .nearby-item .info { flex: 1; }
     .nearby-item .info .name { font-weight: 600; font-size: 15px; }
     .nearby-item .info .dist { font-size: 12px; color: #888; }
+    .nearby-item .info .type-badge { font-size: 11px; display: inline-block; padding: 1px 6px; border-radius: 4px; margin-top: 2px; color: #fff; }
     .nearby-item .nav-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-weight: 500; white-space: nowrap; }
     #loading {
       position: absolute; top: 92px; left: 0; right: 0; bottom: 0; z-index: 2000;
@@ -53,17 +53,24 @@
     }
     #loading .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .toilet-icon { background: #2563eb; color: #fff; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-    .toilet-icon-pulse { background: #2563eb; color: #fff; border-radius: 8px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(37,99,235,0.5); animation: pulse 1.5s infinite; }
-    @keyframes pulse { to { box-shadow: 0 0 0 15px rgba(37,99,235,0); } }
     .user-location { background: #059669; border-radius: 50%; width: 20px; height: 20px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
     .user-location::after { content: ''; position: absolute; width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(5,150,105,0.4); animation: pulse-ring 2s infinite; pointer-events: none; }
     @keyframes pulse-ring { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
     .leaflet-popup-content-wrapper { border-radius: 12px !important; font-family: 'Noto Sans TC', sans-serif; }
     .leaflet-popup-content { font-size: 14px; margin: 10px 14px; }
     .leaflet-popup-content .popup-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .leaflet-popup-content .popup-type { font-size: 11px; display: inline-block; padding: 1px 8px; border-radius: 4px; color: #fff; margin-bottom: 4px; }
     .leaflet-popup-content .popup-addr { color: #666; font-size: 13px; }
     .leaflet-popup-content .popup-nav { display: inline-block; margin-top: 8px; background: #2563eb; color: #fff; padding: 6px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; }
+    #filter-bar {
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1000;
+      background: rgba(255,255,255,0.95); border-radius: 12px; padding: 8px 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; gap: 6px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filter-btn { flex-shrink: 0; padding: 5px 12px; border-radius: 16px; border: 1px solid #ddd; background: #fff; font-size: 12px; cursor: pointer; white-space: nowrap; transition: 0.15s; }
+    .filter-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+    ::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
@@ -80,13 +87,13 @@
       <button class="nav-toggle" aria-label="選單">☰</button>
       <div class="nav-menu">
         <a href="../index.html"><span class="nav-icon">🏠</span> 首頁</a>
-        <a href="toilet.html" class="active"><span class="nav-icon">🚽</span> 廁所</a>
+        <a href="toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
         <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
         <a href="rest.html"><span class="nav-icon">🪑</span> 休息</a>
         <div class="nav-more">
           <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
           <div class="nav-more-items">
-            <a href="hospitals.html">🏥 診所</a>
+            <a href="hospitals.html" class="active">🏥 診所</a>
             <a href="carparks.html">🅿️ 停車場</a>
             <a href="taxistands.html">🚕 的士站</a>
             <a href="ferries.html">⛴️ 渡輪碼頭</a>
@@ -99,69 +106,84 @@
     </div>
   </nav>
 
-  <div id="loading"><div class="spinner"></div><span>正在定位你的位置...</span></div>
+  <div id="loading"><div class="spinner"></div><span>正在載入醫院診所資料...</span></div>
+  <div id="filter-bar"></div>
   <div id="map"></div>
   <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
   <div id="nearby-panel"><div class="handle"></div><div id="nearby-list"></div></div>
 
-  <footer>
-    <div class="container">
-      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
-      <div class="footer-links">
-        <a href="../index.html">首頁</a>
-        <a href="toilet.html">廁所</a>
-        <a href="wifi.html">WiFi</a>
-        <a href="rest.html">休息</a>
-        <a href="hospitals.html">診所</a>
-        <a href="carparks.html">停車場</a>
-        <a href="taxistands.html">的士站</a>
-        <a href="ferries.html">渡輪碼頭</a>
-        <a href="postoffices.html">郵政局</a>
-        <a href="beaches.html">泳灘</a>
-        <a href="weather.html">天氣</a>
-      </div>
-    </div>
-  </footer>
-
   <script>
-    var map, userMarker, toiletData = [], nearbyPanel = document.getElementById('nearby-list');
+    var map, userMarker, hospData = [], filteredData = [], mcg;
     var loading = document.getElementById('loading');
+    var nearbyPanel = document.getElementById('nearby-list');
+    var filterBar = document.getElementById('filter-bar');
+    var currentFilter = 'all';
+
+    var typeIcons = { '醫院': { emoji: '🏥', bg: '#dc2626' }, '專科門診': { emoji: '🩺', bg: '#d97706' }, '診所': { emoji: '💊', bg: '#059669' } };
 
     function initMap(lat, lng) {
-      map = L.map('map', { zoomControl: false }).setView([lat, lng], 17);
+      map = L.map('map', { zoomControl: false }).setView([lat, lng], 16);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> | <a href="https://carto.com/">CARTO</a>'
+        maxZoom: 19, attribution: '&copy; OSM | CARTO'
       }).addTo(map);
 
-      // User marker
       var userIcon = L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
       userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup('📍 你目前的位置');
 
-      // Load toilet data
-      fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
-        toiletData = data;
-        // Cluster group
-        var mcg = L.markerClusterGroup({
-          chunkedLoading: true, maxClusterRadius: 50,
-          iconCreateFunction: function(cluster) {
-            return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
-          }
-        });
-        data.forEach(function(t) {
-          if (t.lat && t.lng) {
-            var icon = L.divIcon({ html: 'WC', className: 'toilet-icon', iconSize: [36, 36] });
-            var marker = L.marker([t.lat, t.lng], { icon: icon });
-            marker.bindPopup('<div class="popup-name">' + (t.n || '廁所') + '</div><div class="popup-addr">' + (t.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>');
-            mcg.addLayer(marker);
-          }
-        });
-        map.addLayer(mcg);
+      fetch('../data/hospitals.json').then(function(r) { return r.json(); }).then(function(data) {
+        hospData = data;
+        filteredData = data;
+        buildFilterBar();
+        renderMarkers();
         showNearest(lat, lng, data);
         loading.style.display = 'none';
       });
     }
 
-    // Haversine distance
+    function buildFilterBar() {
+      var counts = {};
+      hospData.forEach(function(h) { counts[h.t] = (counts[h.t] || 0) + 1; });
+      var cats = ['醫院', '專科門診', '診所'];
+      var html = '<button class="filter-btn active" data-type="all">全部 (' + hospData.length + ')</button>';
+      cats.forEach(function(k) {
+        var c = counts[k] || 0;
+        if (c > 0) html += '<button class="filter-btn" data-type="' + k + '">' + (typeIcons[k].emoji || '') + ' ' + k + ' (' + c + ')</button>';
+      });
+      filterBar.innerHTML = html;
+      filterBar.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.onclick = function() {
+          filterBar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          currentFilter = btn.dataset.type;
+          renderMarkers();
+          if (userMarker) { showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData); }
+        };
+      });
+    }
+
+    function renderMarkers() {
+      if (mcg) { map.removeLayer(mcg); }
+      filteredData = currentFilter === 'all' ? hospData : hospData.filter(function(h) { return h.t === currentFilter; });
+
+      mcg = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50,
+        iconCreateFunction: function(cluster) {
+          return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
+        }
+      });
+
+      filteredData.forEach(function(h) {
+        if (h.lat && h.lng) {
+          var t = h.t || '診所';
+          var iconInfo = typeIcons[t] || { emoji: '💊', bg: '#059669' };
+          var icon = L.divIcon({ html: '<div style="background:' + iconInfo.bg + ';border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + iconInfo.emoji + '</div>', className: '', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -18] });
+          var marker = L.marker([h.lat, h.lng], { icon: icon });
+          marker.bindPopup('<div class="popup-name">' + (h.n || '') + '</div><div class="popup-type" style="background:' + iconInfo.bg + '">' + iconInfo.emoji + ' ' + t + '</div><div class="popup-addr">' + (h.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + h.lat + ',' + h.lng + '" target="_blank">🗺️ Google 導航</a>');
+          mcg.addLayer(marker);
+        }
+      });
+      map.addLayer(mcg);
+    }
+
     function haversine(lat1, lng1, lat2, lng2) {
       var R = 6371000;
       var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -171,24 +193,22 @@
     }
 
     function showNearest(lat, lng, data) {
-      var withDist = data.map(function(t) {
-        return { item: t, dist: haversine(lat, lng, t.lat, t.lng) };
-      }).sort(function(a, b) { return a.dist - b.dist; });
-
-      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">🚽 離你最近的廁所</div>';
-      withDist.slice(0, 5).forEach(function(d, i) {
+      var list = data.map(function(h) { return { item: h, dist: haversine(lat, lng, h.lat, h.lng) }; }).sort(function(a, b) { return a.dist - b.dist; });
+      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">🏥 離你最近的醫院診所</div>';
+      list.slice(0, 5).forEach(function(d, i) {
+        var t = d.item.t || '診所';
+        var iconInfo = typeIcons[t] || { emoji: '💊', bg: '#059669' };
         var meters = Math.round(d.dist);
         var walkMin = Math.round(d.dist / 80);
         html += '<div class="nearby-item" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">';
         html += '<div class="num">' + (i+1) + '</div>';
-        html += '<div class="info"><div class="name">' + (d.item.n || '廁所') + '</div><div class="dist">' + meters + 'm（步行約 ' + walkMin + ' 分鐘）</div></div>';
+        html += '<div class="info"><div class="name">' + (d.item.n || '') + '</div><div class="dist">' + meters + 'm（步行約 ' + walkMin + ' 分鐘） <span class="type-badge" style="background:' + iconInfo.bg + '">' + iconInfo.emoji + ' ' + t + '</span></div></div>';
         html += '<button class="nav-btn" onclick="event.stopPropagation();window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">導航</button>';
         html += '</div>';
       });
       nearbyPanel.innerHTML = html;
     }
 
-    // Get user location with continuous tracking
     var watchId = null;
     if (navigator.geolocation) {
       watchId = navigator.geolocation.watchPosition(
@@ -196,17 +216,13 @@
           var lat = pos.coords.latitude, lng = pos.coords.longitude;
           if (!map) { initMap(lat, lng); } else {
             if (userMarker) { userMarker.setLatLng([lat, lng]); }
-            if (toiletData.length) { showNearest(lat, lng, toiletData); }
+            if (hospData.length) { showNearest(lat, lng, filteredData.length ? filteredData : hospData); }
           }
         },
         function() { if (!map) { fallbackLocation(); } },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );
     } else { fallbackLocation(); }
-
-    function stopTracking() {
-      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-    }
 
     function fallbackLocation() {
       loading.innerHTML = '<div class="spinner"></div><span>正在透過 IP 定位...</span>';
@@ -216,7 +232,7 @@
       xhr.onload = function() {
         if (xhr.status === 200) {
           var ip = JSON.parse(xhr.responseText);
-          if (ip.latitude && ip.longitude && ip.city && ip.country === 'HK') {
+          if (ip.latitude && ip.longitude && ip.city) {
             initMap(ip.latitude, ip.longitude);
             return;
           }
@@ -238,12 +254,32 @@
     document.getElementById('locateBtn').onclick = function() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(pos) {
-          map.setView([pos.coords.latitude, pos.coords.longitude], 17);
+          map.setView([pos.coords.latitude, pos.coords.longitude], 16);
           if (userMarker) { userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]); }
-          if (toiletData.length) { showNearest(pos.coords.latitude, pos.coords.longitude, toiletData); }
+          var data = filteredData.length ? filteredData : hospData;
+          if (data.length) { showNearest(pos.coords.latitude, pos.coords.longitude, data); }
         });
       }
     };
   </script>
+
+  <footer>
+    <div class="container">
+      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <div class="footer-links">
+        <a href="../index.html">首頁</a>
+        <a href="toilet.html">廁所</a>
+        <a href="wifi.html">WiFi</a>
+        <a href="rest.html">休息</a>
+        <a href="hospitals.html">診所</a>
+        <a href="carparks.html">停車場</a>
+        <a href="taxistands.html">的士站</a>
+        <a href="ferries.html">渡輪碼頭</a>
+        <a href="postoffices.html">郵政局</a>
+        <a href="beaches.html">泳灘</a>
+        <a href="weather.html">天氣</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

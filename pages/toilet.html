@@ -28,8 +28,19 @@
         <a href="../index.html"><span class="nav-icon">🏠</span> 首頁</a>
         <a href="toilet.html" class="active"><span class="nav-icon">🚽</span> 廁所</a>
         <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
-      </div>
         <a href="rest.html"><span class="nav-icon">🪑</span> 休息</a>
+        <div class="nav-more">
+          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <div class="nav-more-items">
+            <a href="hospitals.html">🏥 診所</a>
+            <a href="carparks.html">🅿️ 停車場</a>
+            <a href="taxistands.html">🚕 的士站</a>
+            <a href="ferries.html">⛴️ 渡輪碼頭</a>
+            <a href="postoffices.html">📮 郵政局</a>
+            <a href="beaches.html">🏖️ 泳灘</a>
+            <a href="weather.html">🌤️ 天氣</a>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -712,13 +723,19 @@
   <footer>
     <div class="container">
       <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
-      <p style="margin-top:4px;font-size:0.75rem;">
-        <a href="../index.html">首頁</a> &middot;
-        <a href="toilet.html">廁所</a> &middot;
-        <a href="wifi.html">WiFi</a> &middot;
-        <a href="luggage.html">行李</a> &middot;
+      <div class="footer-links">
+        <a href="../index.html">首頁</a>
+        <a href="toilet.html">廁所</a>
+        <a href="wifi.html">WiFi</a>
         <a href="rest.html">休息</a>
-      </p>
+        <a href="hospitals.html">診所</a>
+        <a href="carparks.html">停車場</a>
+        <a href="taxistands.html">的士站</a>
+        <a href="ferries.html">渡輪碼頭</a>
+        <a href="postoffices.html">郵政局</a>
+        <a href="beaches.html">泳灘</a>
+        <a href="weather.html">天氣</a>
+      </div>
     </div>
   </footer>
 </body>
