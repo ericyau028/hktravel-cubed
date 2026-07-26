@@ -16,10 +16,12 @@
   <link rel="stylesheet" href="../css/style.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <script src="../js/search.js" defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
     #map { position: absolute; top: 92px; bottom: 0; left: 0; right: 0; }
+    #search-container { position: absolute; top: 8px; left: 10px; right: 10px; z-index: 999; max-width: 460px; margin: 0 auto; }
     .locate-btn {
       position: absolute; bottom: 220px; right: 20px; z-index: 1000;
       background: #fff; border: 2px solid #ddd; border-radius: 50%;
@@ -110,6 +112,7 @@
   </nav>
 
   <div id="loading"><div class="spinner"></div><span>正在載入 WiFi 地圖...</span></div>
+  <div id="search-container"></div>
   <div id="filter-bar"></div>
   <div id="map"></div>
   <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
@@ -135,7 +138,7 @@
   </footer>
 
   <script>
-    var map, userMarker, wifiData = [], filteredData = [], mcg;
+    var map, userMarker, wifiData = [], filteredData = [], mcg, searchInstance = null;
     var loading = document.getElementById('loading');
     var nearbyPanel = document.getElementById('nearby-list');
     var filterBar = document.getElementById('filter-bar');
@@ -181,6 +184,17 @@
         renderMarkers();
         showNearest(lat, lng, data);
         loading.style.display = 'none';
+        searchInstance = createSearch({
+          container: '#search-container',
+          data: wifiData,
+          fields: ['n', 'a', 'd', 't', 's'],
+          placeholder: '搜尋 WiFi 熱點名稱、SSID、地區...',
+          onFilter: function(fd) {
+            filteredData = currentFilter === 'all' ? fd : fd.filter(function(w) { return classifyVenue(w.t) === currentFilter; });
+            renderMarkers();
+            if (userMarker) showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData);
+          }
+        });
       });
     }
 
@@ -199,15 +213,13 @@
           filterBar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
           btn.classList.add('active');
           currentFilter = btn.dataset.type;
-          renderMarkers();
-          if (userMarker) { showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData); }
+          if (searchInstance) { searchInstance.filter(); } else { renderMarkers(); }
         };
       });
     }
 
     function renderMarkers() {
       if (mcg) { map.removeLayer(mcg); }
-      filteredData = currentFilter === 'all' ? wifiData : wifiData.filter(function(w) { return classifyVenue(w.t) === currentFilter; });
 
       mcg = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 50,
         iconCreateFunction: function(cluster) {

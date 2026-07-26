@@ -17,10 +17,12 @@
   <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <script src="../js/search.js" defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
     #map { position: absolute; top: 92px; bottom: 0; left: 0; right: 0; }
+    #search-container { position: absolute; top: 8px; left: 10px; right: 10px; z-index: 999; max-width: 460px; margin: 0 auto; }
     .locate-btn {
       position: absolute; bottom: 220px; right: 20px; z-index: 1000;
       background: #fff; border: 2px solid #ddd; border-radius: 50%;
@@ -100,6 +102,7 @@
   </nav>
 
   <div id="loading"><div class="spinner"></div><span>正在定位你的位置...</span></div>
+  <div id="search-container"></div>
   <div id="map"></div>
   <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
   <div id="nearby-panel"><div class="handle"></div><div id="nearby-list"></div></div>
@@ -124,7 +127,8 @@
   </footer>
 
   <script>
-    var map, userMarker, poData = [], nearbyPanel = document.getElementById('nearby-list');
+    var map, userMarker, poData = [], filteredData = [], mcg, searchInstance = null;
+    var nearbyPanel = document.getElementById('nearby-list');
     var loading = document.getElementById('loading');
 
     function initMap(lat, lng) {
@@ -138,24 +142,41 @@
 
       fetch('../data/postoffices.json').then(function(r) { return r.json(); }).then(function(data) {
         poData = data;
-        var mcg = L.markerClusterGroup({
-          chunkedLoading: true, maxClusterRadius: 50,
-          iconCreateFunction: function(cluster) {
-            return L.divIcon({ html: '<div style="background:#dc2626;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
-          }
-        });
-        data.forEach(function(p) {
-          if (p.lat && p.lng) {
-            var icon = L.divIcon({ html: '📮', className: 'po-icon', iconSize: [36, 36] });
-            var marker = L.marker([p.lat, p.lng], { icon: icon });
-            marker.bindPopup('<div class="popup-name">' + (p.n || '郵政局') + '</div><div class="popup-addr">' + (p.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng + '" target="_blank">🗺️ Google 導航</a>');
-            mcg.addLayer(marker);
-          }
-        });
-        map.addLayer(mcg);
-        showNearest(lat, lng, data);
+        filteredData = data;
+        renderMarkers();
+        showNearest(lat, lng, filteredData);
         loading.style.display = 'none';
+        searchInstance = createSearch({
+          container: '#search-container',
+          data: poData,
+          fields: ['n', 'a', 'd'],
+          placeholder: '搜尋郵政局名稱、地區...',
+          onFilter: function(fd) {
+            filteredData = fd;
+            renderMarkers();
+            if (userMarker) showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData);
+          }
+        });
       });
+    }
+
+    function renderMarkers() {
+      if (mcg) { map.removeLayer(mcg); }
+      mcg = L.markerClusterGroup({
+        chunkedLoading: true, maxClusterRadius: 50,
+        iconCreateFunction: function(cluster) {
+          return L.divIcon({ html: '<div style="background:#dc2626;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
+        }
+      });
+      filteredData.forEach(function(p) {
+        if (p.lat && p.lng) {
+          var icon = L.divIcon({ html: '📮', className: 'po-icon', iconSize: [36, 36] });
+          var marker = L.marker([p.lat, p.lng], { icon: icon });
+          marker.bindPopup('<div class="popup-name">' + (p.n || '郵政局') + '</div><div class="popup-addr">' + (p.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng + '" target="_blank">🗺️ Google 導航</a>');
+          mcg.addLayer(marker);
+        }
+      });
+      map.addLayer(mcg);
     }
 
     function haversine(lat1, lng1, lat2, lng2) {
@@ -191,7 +212,7 @@
           var lat = pos.coords.latitude, lng = pos.coords.longitude;
           if (!map) { initMap(lat, lng); } else {
             if (userMarker) { userMarker.setLatLng([lat, lng]); }
-            if (poData.length) { showNearest(lat, lng, poData); }
+            if (filteredData.length) { showNearest(lat, lng, filteredData); }
           }
         },
         function() { if (!map) { fallbackLocation(); } },

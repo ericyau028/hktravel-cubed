@@ -26,6 +26,19 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+// ===== Nav More dropdown =====
+document.addEventListener('DOMContentLoaded', function () {
+  const navMoreItems = document.querySelector('.nav-more-items');
+  if (navMoreItems) {
+    document.addEventListener('click', function (e) {
+      const navMore = document.querySelector('.nav-more');
+      if (navMore && !navMore.contains(e.target)) {
+        navMore.classList.remove('open');
+      }
+    });
+  }
+});
+
 // ===== Google Analytics (GA4) =====
 window.dataLayer = window.dataLayer || [];
 function gtag(){ dataLayer.push(arguments); }

@@ -17,10 +17,12 @@
   <!-- Google tag -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <script src="../js/search.js" defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
     #map { position: absolute; top: 92px; bottom: 0; left: 0; right: 0; }
+    #search-container { position: absolute; top: 8px; left: 10px; right: 10px; z-index: 999; max-width: 460px; margin: 0 auto; }
     .locate-btn {
       position: absolute; bottom: 220px; right: 20px; z-index: 1000;
       background: #fff; border: 2px solid #ddd; border-radius: 50%;
@@ -100,6 +102,7 @@
   </nav>
 
   <div id="loading"><div class="spinner"></div><span>正在定位你的位置...</span></div>
+  <div id="search-container"></div>
   <div id="map"></div>
   <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
   <div id="nearby-panel"><div class="handle"></div><div id="nearby-list"></div></div>
@@ -124,8 +127,10 @@
   </footer>
 
   <script>
-    var map, userMarker, toiletData = [], nearbyPanel = document.getElementById('nearby-list');
+    var map, userMarker, toiletData = [], filteredData = [], mcg;
+    var nearbyPanel = document.getElementById('nearby-list');
     var loading = document.getElementById('loading');
+    var searchInstance = null;
 
     function initMap(lat, lng) {
       map = L.map('map', { zoomControl: false }).setView([lat, lng], 17);
@@ -133,32 +138,46 @@
         maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> | <a href="https://carto.com/">CARTO</a>'
       }).addTo(map);
 
-      // User marker
       var userIcon = L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
       userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup('📍 你目前的位置');
 
-      // Load toilet data
       fetch('../data/toilets.json').then(function(r) { return r.json(); }).then(function(data) {
         toiletData = data;
-        // Cluster group
-        var mcg = L.markerClusterGroup({
-          chunkedLoading: true, maxClusterRadius: 50,
-          iconCreateFunction: function(cluster) {
-            return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
-          }
-        });
-        data.forEach(function(t) {
-          if (t.lat && t.lng) {
-            var icon = L.divIcon({ html: 'WC', className: 'toilet-icon', iconSize: [36, 36] });
-            var marker = L.marker([t.lat, t.lng], { icon: icon });
-            marker.bindPopup('<div class="popup-name">' + (t.n || '廁所') + '</div><div class="popup-addr">' + (t.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>');
-            mcg.addLayer(marker);
-          }
-        });
-        map.addLayer(mcg);
-        showNearest(lat, lng, data);
+        filteredData = data;
+        renderMarkers();
+        showNearest(lat, lng, filteredData);
         loading.style.display = 'none';
+        searchInstance = createSearch({
+          container: '#search-container',
+          data: toiletData,
+          fields: ['n', 'a'],
+          placeholder: '搜尋廁所名稱、地址...',
+          onFilter: function(fd) {
+            filteredData = fd;
+            renderMarkers();
+            if (userMarker) showNearest(userMarker.getLatLng().lat, userMarker.getLatLng().lng, filteredData);
+          }
+        });
       });
+    }
+
+    function renderMarkers() {
+      if (mcg) { map.removeLayer(mcg); }
+      mcg = L.markerClusterGroup({
+        chunkedLoading: true, maxClusterRadius: 50,
+        iconCreateFunction: function(cluster) {
+          return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
+        }
+      });
+      filteredData.forEach(function(t) {
+        if (t.lat && t.lng) {
+          var icon = L.divIcon({ html: 'WC', className: 'toilet-icon', iconSize: [36, 36] });
+          var marker = L.marker([t.lat, t.lng], { icon: icon });
+          marker.bindPopup('<div class="popup-name">' + (t.n || '廁所') + '</div><div class="popup-addr">' + (t.a || '') + '</div><a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>');
+          mcg.addLayer(marker);
+        }
+      });
+      map.addLayer(mcg);
     }
 
     // Haversine distance
@@ -196,17 +215,13 @@
           var lat = pos.coords.latitude, lng = pos.coords.longitude;
           if (!map) { initMap(lat, lng); } else {
             if (userMarker) { userMarker.setLatLng([lat, lng]); }
-            if (toiletData.length) { showNearest(lat, lng, toiletData); }
+            if (filteredData.length) { showNearest(lat, lng, filteredData); }
           }
         },
         function() { if (!map) { fallbackLocation(); } },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );
     } else { fallbackLocation(); }
-
-    function stopTracking() {
-      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-    }
 
     function fallbackLocation() {
       loading.innerHTML = '<div class="spinner"></div><span>正在透過 IP 定位...</span>';
@@ -240,7 +255,7 @@
         navigator.geolocation.getCurrentPosition(function(pos) {
           map.setView([pos.coords.latitude, pos.coords.longitude], 17);
           if (userMarker) { userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]); }
-          if (toiletData.length) { showNearest(pos.coords.latitude, pos.coords.longitude, toiletData); }
+          if (filteredData.length) { showNearest(pos.coords.latitude, pos.coords.longitude, filteredData); }
         });
       }
     };
