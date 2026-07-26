@@ -125,9 +125,11 @@
             return L.divIcon({ html: '<div style="background:#2563eb;color:#fff;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;border:2px solid #fff;">' + cluster.getChildCount() + '</div>', className: '', iconSize: [40, 40] });
           }
         });
+        var iconMap = { '商場': { emoji: '🏪', bg: '#2563eb' }, '公園': { emoji: '🌳', bg: '#059669' }, '圖書館': { emoji: '📚', bg: '#d97706' }, '休憩處': { emoji: '🪑', bg: '#7c3aed' }, '社區中心': { emoji: '🏛️', bg: '#dc2626' } };
         data.forEach(function(t) {
           if (t.lat && t.lng) {
-            var icon = L.divIcon({ html: '🪑', className: 'rest-icon', iconSize: [36, 36] });
+            var ic = iconMap[t.t] || { emoji: '🪑', bg: '#2563eb' };
+            var icon = L.divIcon({ html: '<div style="background:' + ic.bg + ';color:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + ic.emoji + '</div>', className: '', iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -18] });
             var marker = L.marker([t.lat, t.lng], { icon: icon });
             var ratingHtml = t.r ? '<div class="popup-rating">' + t.r + '</div>' : '';
             var catHtml = t.t ? '<div class="popup-cat">' + t.t + '</div>' : '';
