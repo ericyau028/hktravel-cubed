@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>🪑 附近休息區 — 香港旅遊便利站</title>
+  <meta name="description" content="香港旅遊便利站 - 香港休息區互動地圖，涵蓋全港商場、公園、圖書館、休憩處及社區中心等2685個休息點，支援附近搜尋及導航。">
   <link rel="canonical" href="https://hk.cubedhub.com/pages/rest-map.html">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -16,12 +17,14 @@
   <link rel="stylesheet" href="../css/style.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-132PFXDSM9');</script>
+  <script src="../js/i18n.js" defer></script>
+  <script src="../js/animations.js" defer></script>
   <script src="../js/search.js" defer></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; height: 100%; }
-    #map { position: absolute; top: 92px; bottom: 0; left: 0; right: 0; }
-    #search-container { position: absolute; top: 8px; left: 10px; right: 10px; z-index: 999; max-width: 460px; margin: 0 auto; }
+    #map { position: absolute; top: 162px; bottom: 0; left: 0; right: 0; }
+    #search-container { position: absolute; top: 170px; left: 10px; right: 10px; z-index: 999; max-width: 460px; margin: 0 auto; }
     .locate-btn {
       position: absolute; bottom: 280px; right: 20px; z-index: 1000;
       background: #fff; border: 2px solid #ddd; border-radius: 50%;
@@ -61,7 +64,7 @@
     .nearby-item .info .dist { font-size: 12px; color: #888; }
     .nearby-item .nav-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-weight: 500; white-space: nowrap; }
     #loading {
-      position: absolute; top: 92px; left: 0; right: 0; bottom: 0; z-index: 2000;
+      position: absolute; top: 162px; left: 0; right: 0; bottom: 0; z-index: 2000;
       background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
       font-size: 18px; color: #333; gap: 10px;
     }
@@ -94,8 +97,9 @@
 <body>
   <div class="top-bar">
     <div class="container">
-      <a href="#" lang="zh-Hant">繁體</a>
-      <a href="#" lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="zh-Hant">繁體</a>
+      <a href="#" data-lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="en">English</a>
     </div>
   </div>
 
@@ -104,27 +108,37 @@
       <a href="../index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
       <button class="nav-toggle" aria-label="選單">☰</button>
       <div class="nav-menu">
-        <a href="../index.html"><span class="nav-icon">🏠</span> 首頁</a>
-        <a href="toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
-        <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
-        <a href="rest.html" class="active"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="../index.html"><span class="nav-icon">🏠</span> <span data-i18n="nav_home">首頁</span></a>
+        <a href="toilet.html"><span class="nav-icon">🚽</span> <span data-i18n="nav_toilet">廁所</span></a>
+        <a href="wifi.html"><span class="nav-icon">📶</span> <span data-i18n="nav_wifi">WiFi</span></a>
+        <a href="rest.html" class="active"><span class="nav-icon">🪑</span> <span data-i18n="nav_rest">休息</span></a>
+        <a href="bus-fav.html"><span class="nav-icon">⭐</span> <span data-i18n="nav_bus_fav">常用</span></a>
         <div class="nav-more">
-          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> <span data-i18n="nav_more">更多</span> <span class="nav-arrow">▾</span></button>
           <div class="nav-more-items">
-            <a href="hospitals.html">🏥 診所</a>
-            <a href="carparks.html">🅿️ 停車場</a>
-            <a href="taxistands.html">🚕 的士站</a>
-            <a href="ferries.html">⛴️ 渡輪碼頭</a>
-            <a href="postoffices.html">📮 郵政局</a>
-            <a href="beaches.html">🏖️ 泳灘</a>
-            <a href="weather.html">🌤️ 天氣</a>
+            <a href="hospitals-list.html">🏥 <span data-i18n="nav_hospitals">診所</span></a>
+            <a href="carparks-list.html">🅿️ <span data-i18n="nav_carparks">停車場</span></a>
+            <a href="taxistands-list.html">🚕 <span data-i18n="nav_taxistands">的士站</span></a>
+            <a href="ferries-list.html">⛴️ <span data-i18n="nav_ferries">渡輪碼頭</span></a>
+            <a href="postoffices-list.html">📮 <span data-i18n="nav_postoffices">郵政局</span></a>
+            <a href="beaches-list.html">🏖️ <span data-i18n="nav_beaches">泳灘</span></a>
+            <a href="weather.html">🌤️ <span data-i18n="nav_weather">天氣</span></a>
           </div>
         </div>
       </div>
     </div>
   </nav>
 
-  <div id="loading"><div class="spinner"></div><span>正在定位你的位置...</span></div>
+  <section class="page-header" style="padding:10px 0;min-height:auto;">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="../index.html" data-i18n="breadcrumb_home">首頁</a> &gt; <a href="rest.html">🪑 休息區列表</a> &gt; <span>🗺️ 地圖</span>
+      </div>
+      <h2 style="font-size:1.1rem;margin:2px 0 0;">🪑 香港休息區互動地圖</h2>
+    </div>
+  </section>
+
+  <div id="loading"><div class="spinner"></div><span data-i18n="loading_location">正在定位你的位置...</span></div>
   <div id="map"></div>
   <button class="locate-btn" id="locateBtn" title="重新定位">📍</button>
   <div id="search-container"></div>
@@ -141,19 +155,21 @@
 
   <footer>
     <div class="container">
-      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p data-i18n="footer_copyright">© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;" data-i18n="source_rest">資料來源：地政總署 iGeoCom</p>
       <div class="footer-links">
-        <a href="../index.html">首頁</a>
-        <a href="toilet.html">廁所</a>
-        <a href="wifi.html">WiFi</a>
-        <a href="rest.html">休息</a>
-        <a href="hospitals.html">診所</a>
-        <a href="carparks.html">停車場</a>
-        <a href="taxistands.html">的士站</a>
-        <a href="ferries.html">渡輪碼頭</a>
-        <a href="postoffices.html">郵政局</a>
-        <a href="beaches.html">泳灘</a>
-        <a href="weather.html">天氣</a>
+        <a href="../index.html" data-i18n="nav_home">首頁</a>
+        <a href="toilet.html" data-i18n="nav_toilet">廁所</a>
+        <a href="wifi.html" data-i18n="nav_wifi">WiFi</a>
+        <a href="rest.html" data-i18n="nav_rest">休息</a>
+        <a href="hospitals-list.html" data-i18n="nav_hospitals">診所</a>
+        <a href="carparks-list.html" data-i18n="nav_carparks">停車場</a>
+        <a href="taxistands-list.html" data-i18n="nav_taxistands">的士站</a>
+        <a href="ferries-list.html" data-i18n="nav_ferries">渡輪碼頭</a>
+        <a href="postoffices-list.html" data-i18n="nav_postoffices">郵政局</a>
+        <a href="beaches-list.html" data-i18n="nav_beaches">泳灘</a>
+        <a href="weather.html" data-i18n="nav_weather">天氣</a>
+        <a href="bus-fav.html" data-i18n="nav_bus_fav">⭐ 常用路線</a>
       </div>
     </div>
   </footer>
@@ -166,12 +182,12 @@
 
     function initMap(lat, lng) {
       map = L.map('map', { zoomControl: false }).setView([lat, lng], 17);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> | <a href="https://carto.com/">CARTO</a>'
       }).addTo(map);
 
       var userIcon = L.divIcon({ html: '<div class="user-location"></div>', className: '', iconSize: [20, 20], iconAnchor: [10, 10] });
-      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup('📍 你目前的位置');
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup(LANG.t('your_location'));
 
       fetch('../data/rest.json').then(function(r) { return r.json(); }).then(function(data) {
         restData = data;
@@ -194,7 +210,7 @@
               ratingHtml +
               '<div class="popup-addr">' + (t.a || '') + '</div>' +
               catHtml +
-              '<a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">🗺️ Google 導航</a>'
+              '<a class="popup-nav" href="https://www.google.com/maps/dir/?api=1&destination=' + t.lat + ',' + t.lng + '" target="_blank">' + LANG.t('google_nav') + '</a>'
             );
             marker._restData = t;
             allMarkers.push(marker);
@@ -209,7 +225,6 @@
           container: '#search-container',
           data: restData,
           fields: ['n', 'a', 'd', 't'],
-          placeholder: '搜尋休息區名稱、地址、類型...',
           onFilter: function(fd) {
             filteredData = fd;
             applyFilter(currentFilter);
@@ -237,7 +252,7 @@
         return { item: t, dist: haversine(lat, lng, t.lat, t.lng) };
       }).sort(function(a, b) { return a.dist - b.dist; });
 
-      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">🪑 離你最近的休息區</div>';
+      var html = '<div style="font-weight:700;font-size:14px;margin-bottom:5px;">' + LANG.t('rest_nearby') + '</div>';
       var count = Math.min(withDist.length, 5);
       for (var i = 0; i < count; i++) {
         var d = withDist[i];
@@ -246,7 +261,7 @@
         html += '<div class="nearby-item" onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">';
         html += '<div class="num">' + (i+1) + '</div>';
         html += '<div class="info"><div class="name">' + (d.item.n || '休息區') + '</div><div class="dist">' + meters + 'm（步行約 ' + walkMin + ' 分鐘）</div></div>';
-        html += '<button class="nav-btn" onclick="event.stopPropagation();window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">導航</button>';
+        html += '<button class="nav-btn" onclick="event.stopPropagation();window.open(\'https://www.google.com/maps/dir/?api=1&destination=' + d.item.lat + ',' + d.item.lng + '\', \'_blank\')">' + LANG.t('navigate') + '</button>';
         html += '</div>';
       }
       nearbyPanel.innerHTML = html;
@@ -299,7 +314,7 @@
     }
 
     function fallbackLocation() {
-      loading.innerHTML = '<div class="spinner"></div><span>正在透過 IP 定位...</span>';
+      loading.innerHTML = '<div class="spinner"></div><span>' + LANG.t('loading_ip') + '</span>';
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'https://ipapi.co/json/', true);
       xhr.timeout = 5000;
@@ -319,7 +334,7 @@
     }
 
     function showDistrictPicker() {
-      loading.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:48px;margin-bottom:10px;">📍</div><div style="font-size:16px;margin-bottom:15px;">無法取得你的位置<br>請選擇你所在的區域：</div><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">' +
+      loading.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:48px;margin-bottom:10px;">📍</div><div style="font-size:16px;margin-bottom:15px;">' + LANG.t('location_fail') + '<br>' + LANG.t('location_select') + '</div><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">' +
         ['尖沙咀',22.3193,114.1694,'中環',22.2820,114.1580,'旺角',22.3196,114.1702,'銅鑼灣',22.2800,114.1830,'灣仔',22.2760,114.1730,'佐敦',22.3040,114.1710,'深水埗',22.3320,114.1620,'沙田',22.3810,114.1880].reduce(function(a,_,i,arr) {
           if (i%3===0) a.push('<button onclick="initMap('+arr[i+1]+','+arr[i+2]+')" style="padding:10px 18px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;">'+arr[i]+'</button>'); return a;
         }, []).join('') + '</div></div>';

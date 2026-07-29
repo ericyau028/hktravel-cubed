@@ -3,21 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>🪑 香港休息區指南 — 香港旅遊便利站</title>
-  <meta name="description" content="香港休息區地圖 — 使用地政總署開放數據，涵蓋全港商場、公園、圖書館、休憩處及社區中心等2685個休息點">
-  <link rel="canonical" href="https://hk.cubedhub.com/pages/rest.html">
+  <title>香港休息區列表 | 香港旅遊便利站</title>
+  <meta name="description" content="香港旅遊便利站 - 全港公共休息點一覽，按地區分類，涵蓋商場、公園、圖書館、休憩處、社區中心、遊樂場等2685個休息點。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .item-list { overflow: hidden; transition: max-height 0.3s ease; }
+    .item-list.collapsed { max-height: 0 !important; }
+    .loading { text-align: center; padding: 40px 0; color: var(--gray-500); font-size: 0.95rem; }
+    .error { text-align: center; padding: 40px 0; color: #e74c3c; }
+    .tag-mall { background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+    .tag-park { background: #059669; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+    .tag-library { background: #d97706; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+    .tag-rest { background: #7c3aed; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+    .tag-community { background: #dc2626; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+    .tag-playground { background: #e11d48; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin-right: 4px; }
+  </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
   <script src="../js/main.js" defer></script>
+  <script src="../js/i18n.js" defer></script>
+  <script src="../js/animations.js" defer></script>
+  <script src="../js/search.js" defer></script>
 </head>
 <body>
   <div class="top-bar">
     <div class="container">
-      <a href="#" lang="zh-Hant">繁體</a>
-      <a href="#" lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="zh-Hant">繁體</a>
+      <a href="#" data-lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="en">English</a>
     </div>
   </div>
 
@@ -26,20 +41,21 @@
       <a href="../index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
       <button class="nav-toggle" aria-label="選單">☰</button>
       <div class="nav-menu">
-        <a href="../index.html"><span class="nav-icon">🏠</span> 首頁</a>
-        <a href="toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
-        <a href="wifi.html"><span class="nav-icon">📶</span> WiFi</a>
-        <a href="rest.html" class="active"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="../index.html" data-i18n="nav_home"><span class="nav-icon">🏠</span> 首頁</a>
+        <a href="toilet.html" data-i18n="nav_toilet"><span class="nav-icon">🚽</span> 廁所</a>
+        <a href="wifi.html" data-i18n="nav_wifi"><span class="nav-icon">📶</span> WiFi</a>
+        <a href="rest.html" class="active" data-i18n="nav_rest"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="bus-fav.html" data-i18n="nav_bus_fav"><span class="nav-icon">⭐</span> 常用</a>
         <div class="nav-more">
-          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <button class="nav-more-btn" data-i18n="nav_more" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
           <div class="nav-more-items">
-            <a href="hospitals.html">🏥 診所</a>
-            <a href="carparks.html">🅿️ 停車場</a>
-            <a href="taxistands.html">🚕 的士站</a>
-            <a href="ferries.html">⛴️ 渡輪碼頭</a>
-            <a href="postoffices.html">📮 郵政局</a>
-            <a href="beaches.html">🏖️ 泳灘</a>
-            <a href="weather.html">🌤️ 天氣</a>
+            <a href="hospitals-list.html" data-i18n="nav_hospitals">🏥 診所</a>
+            <a href="carparks-list.html" data-i18n="nav_carparks">🅿️ 停車場</a>
+            <a href="taxistands-list.html" data-i18n="nav_taxistands">🚕 的士站</a>
+            <a href="ferries-list.html" data-i18n="nav_ferries">⛴️ 渡輪碼頭</a>
+            <a href="postoffices-list.html" data-i18n="nav_postoffices">📮 郵政局</a>
+            <a href="beaches-list.html" data-i18n="nav_beaches">🏖️ 泳灘</a>
+            <a href="weather.html" data-i18n="nav_weather">🌤️ 天氣</a>
           </div>
         </div>
       </div>
@@ -49,81 +65,141 @@
   <section class="page-header">
     <div class="container">
       <div class="breadcrumb">
-        <a href="../index.html">首頁</a> &gt; <span>🪑 休息區</span>
+        <a href="../index.html" data-i18n="breadcrumb_home">首頁</a> &gt; <span data-i18n="rest_title">🪑 休息區</span>
       </div>
-      <h2>🪑 香港休息區指南</h2>
-      <p>全港 2687 個公共休息點 — 商場、公園、圖書館、休憩處、社區中心、主題樂園，使用地政總署開放數據</p>
+      <h2 data-i18n="rest_title">🪑 香港休息區列表</h2>
+      <p>全港公共休息點一覽，按地區分類</p>
+      <a href="rest-map.html" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;font-size:15px;text-decoration:none;margin-top:10px;">🗺️ 開啟互動地圖</a>
     </div>
   </section>
 
   <main class="container">
-    <div style="text-align:center;margin:8px 0 20px;">
-      <a href="rest-map.html" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:10px 28px;border-radius:8px;font-weight:600;font-size:0.95rem;text-decoration:none;">
-        🗺️ 查看地圖
-      </a>
+    <div class="ad-placeholder" style="padding:0;border:none;background:transparent;">
+      <!-- AdSense ad unit will appear here -->
+      <div style="text-align:center;color:var(--gray-400);font-size:0.8rem;padding:12px;">📢 Ad Space · <span data-i18n="ad_placeholder">廣告招商 — 請聯繫我們</span></div>
     </div>
 
-    <div class="ad-placeholder">📢 廣告招商 — 你的廣告在這裡</div>
-
-    <div style="background:var(--blue-light);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:var(--blue);text-align:center;margin-bottom:16px;">
-      資料來源：地政總署 iGeoCom 社區地理資料庫
+    <div id="search-container"></div>
+    <div id="district-jump-wrap" style="display:none;margin:8px 0 4px;position:relative;">
+      <select id="district-jump" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:var(--font-sans);font-size:14px;background:var(--white);color:var(--gray-700);appearance:auto;cursor:pointer;">
+        <option value="">📍 跳到地區…</option>
+      </select>
     </div>
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🏪 780</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">間商場</div>
-      </div>
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--green);">🌳 181</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">個公園</div>
-      </div>
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--blue);">📚 184</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">間圖書館</div>
-      </div>
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🪑 1136</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">個休憩處</div>
-      </div>
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🏛️ 404</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">個社區中心</div>
-      </div>
-      <div style="background:var(--white);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;">
-        <div style="font-size:1.3rem;font-weight:700;color:var(--gray-800);">🎢 2</div>
-        <div style="font-size:0.78rem;color:var(--gray-500);">個主題樂園</div>
-      </div>
-      <div style="background:var(--blue);border-radius:8px;box-shadow:var(--shadow-sm);padding:12px 8px;text-align:center;color:#fff;">
-        <div style="font-size:1.3rem;font-weight:700;">📍 2687</div>
-        <div style="font-size:0.78rem;opacity:0.9;">個休息點</div>
-      </div>
-    </div>
-
-    <p style="font-size:0.85rem;color:var(--gray-600);line-height:1.7;margin-bottom:16px;">
-      本指南使用香港地政總署 iGeoCom 社區地理資料庫的開放數據，整理出全港 2687 個可供公眾休息的地點，涵蓋商場、公園、圖書館、休憩處、社區中心及主題樂園六大類別。無論你想找個冷氣開放的商場唞一唞，還是在公園長椅上享受微風，這份指南都能幫到你。
-    </p>
-
-    <div class="ad-placeholder">📢 廣告招商 — 你的廣告在這裡</div>
+    <div id="list-container"><div class="loading">載入中...</div></div>
   </main>
 
   <footer>
     <div class="container">
-      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p data-i18n="footer_copyright">© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;" data-i18n="source_rest">資料來源：地政總署 iGeoCom</p>
       <div class="footer-links">
-        <a href="../index.html">首頁</a>
-        <a href="toilet.html">廁所</a>
-        <a href="wifi.html">WiFi</a>
-        <a href="rest.html">休息</a>
-        <a href="hospitals.html">診所</a>
-        <a href="carparks.html">停車場</a>
-        <a href="taxistands.html">的士站</a>
-        <a href="ferries.html">渡輪碼頭</a>
-        <a href="postoffices.html">郵政局</a>
-        <a href="beaches.html">泳灘</a>
-        <a href="weather.html">天氣</a>
+        <a href="../index.html" data-i18n="nav_home">首頁</a>
+        <a href="toilet.html" data-i18n="nav_toilet">廁所</a>
+        <a href="wifi.html" data-i18n="nav_wifi">WiFi</a>
+        <a href="rest.html" data-i18n="nav_rest">休息</a>
+        <a href="hospitals-list.html" data-i18n="nav_hospitals">診所</a>
+        <a href="carparks-list.html" data-i18n="nav_carparks">停車場</a>
+        <a href="taxistands-list.html" data-i18n="nav_taxistands">的士站</a>
+        <a href="ferries-list.html" data-i18n="nav_ferries">渡輪碼頭</a>
+        <a href="postoffices-list.html" data-i18n="nav_postoffices">郵政局</a>
+        <a href="beaches-list.html" data-i18n="nav_beaches">泳灘</a>
+        <a href="weather.html" data-i18n="nav_weather">天氣</a>
+        <a href="bus-fav.html" data-i18n="nav_bus_fav">⭐ 常用路線</a>
       </div>
     </div>
   </footer>
+<script>
+(function() {
+  function groupAndSort(data) {
+    var m={};
+    data.forEach(function(it){var d=it.d||'其他 Others';if(!m[d])m[d]=[];m[d].push(it);});
+    var r=[];
+    Object.keys(m).sort().forEach(function(d){
+      m[d].sort(function(a,b){return(a.n||'').localeCompare(b.n||'');});
+      r.push({district:d,items:m[d]});
+    });
+    return r;
+  }
+
+  function esc(s){if(!s)return '';return document.createElement('div').appendChild(document.createTextNode(s)).parentNode.innerHTML;}
+
+  function getTagClass(t) {
+    if (t==='商場') return 'tag-mall';
+    if (t==='公園') return 'tag-park';
+    if (t==='圖書館') return 'tag-library';
+    if (t==='休憩處') return 'tag-rest';
+    if (t==='社區中心') return 'tag-community';
+    if (t==='遊樂場') return 'tag-playground';
+    return 'tag-rest';
+  }
+
+  function render(grps) {
+    var c=document.getElementById('list-container');
+    var h='';
+    for(var i=0;i<grps.length;i++){
+      var g=grps[i];
+      h+='<section class="district-section"><h3 class="district-title"><span class="title-icon">📍</span> '+esc(g.district)+' ('+g.items.length+')</h3><div class="item-list collapsed">';
+      for(var j=0;j<g.items.length;j++){
+        var it=g.items[j];
+        h+='<div class="item-card"><h4>'+esc(it.n||'')+'</h4>';
+        if(it.t)h+='<div><span class="'+getTagClass(it.t)+'">'+esc(it.t)+'</span></div>';
+        if(it.a)h+='<div class="item-addr">'+esc(it.a)+'</div>';
+        h+='</div>';
+      }
+      h+='</div></section>';
+    }
+    c.innerHTML=h;
+    var ts=c.querySelectorAll('.district-title');
+    for(var k=0;k<ts.length;k++){
+      ts[k].addEventListener('click',function(){
+        var lst=this.nextElementSibling;
+        var opn=!lst.classList.contains('collapsed');
+        var al=c.querySelectorAll('.item-list');
+        for(var m=0;m<al.length;m++){al[m].classList.add('collapsed');al[m].style.maxHeight='0';}
+        if(!opn){lst.classList.remove('collapsed');lst.style.maxHeight=lst.scrollHeight+'px';}
+      });
+    }
+    var jw=document.getElementById('district-jump-wrap');
+    var jm=document.getElementById('district-jump');
+    jw.style.display='';
+    var cur=jm.value;
+    jm.innerHTML='<option value="">📍 跳到地區…</option>';
+    for(var i=0;i<grps.length;i++){
+      jm.innerHTML+='<option value="'+esc(grps[i].district.replace(/'/g,"\\'"))+'">'+esc(grps[i].district)+' ('+grps[i].items.length+')</option>';
+    }
+    if(cur)jm.value=cur;
+    jm.onchange=function(){
+      var d=this.value;
+      if(!d)return;
+      var al=c.querySelectorAll('.item-list');
+      for(var m=0;m<al.length;m++){al[m].classList.add('collapsed');al[m].style.maxHeight='0';}
+      var secs=c.querySelectorAll('.district-section');
+      for(var m=0;m<secs.length;m++){
+        var t=secs[m].querySelector('.district-title');
+        if(t&&t.textContent.indexOf(d)!==-1){
+          var lst=t.nextElementSibling;
+          lst.classList.remove('collapsed');
+          lst.style.maxHeight=lst.scrollHeight+'px';
+          secs[m].scrollIntoView({behavior:'smooth',block:'start'});
+          break;
+        }
+      }
+    };
+  }
+
+  fetch('../data/rest.json').then(function(r){return r.json();}).then(function(data){
+    render(groupAndSort(data));
+    if(typeof window.createSearch==='function'){
+      window.createSearch({
+        container:'#search-container',data:data,fields:['n','a','d','t'],
+        placeholder:'搜尋地區、休息點名稱... (繁/簡/EN)',
+        onFilter:function(fd){render(groupAndSort(fd));}
+      });
+    }
+  }).catch(function(e){
+    document.getElementById('list-container').innerHTML='<div class="error">載入失敗</div>';
+  });
+})();
+</script>
 </body>
 </html>

@@ -11,42 +11,47 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
+  <script src="js/i18n.js" defer></script>
+  <script src="js/search.js" defer></script>
+  <script src="js/animations.js" defer></script>
   <script src="js/main.js" defer></script>
 </head>
 <body>
   <div class="top-bar">
     <div class="container">
-      <a href="#" lang="zh-Hant">繁體</a>
-      <a href="#" lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="zh-Hant">繁體</a>
+      <a href="#" data-lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="en">English</a>
     </div>
   </div>
 
   <nav>
     <div class="container">
-      <a href="index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
+      <a href="index.html" class="nav-brand" data-i18n="hero_title">香港旅遊<span>便利站</span></a>
       <button class="nav-toggle" aria-label="選單">☰</button>
       <div class="nav-menu">
-        <a href="index.html" class="active"><span class="nav-icon">🏠</span> 首頁</a>
-        <a href="pages/toilet.html"><span class="nav-icon">🚽</span> 廁所</a>
-        <a href="pages/wifi.html"><span class="nav-icon">📶</span> WiFi</a>
-        <a href="pages/rest.html"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="index.html" class="active" data-i18n="nav_home"><span class="nav-icon">🏠</span> 首頁</a>
+        <a href="pages/toilet.html" data-i18n="nav_toilet"><span class="nav-icon">🚽</span> 廁所</a>
+        <a href="pages/wifi.html" data-i18n="nav_wifi"><span class="nav-icon">📶</span> WiFi</a>
+        <a href="pages/rest.html" data-i18n="nav_rest"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="pages/bus-fav.html" data-i18n="nav_bus_fav"><span class="nav-icon">⭐</span> 常用</a>
         <div class="nav-more">
-          <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <button class="nav-more-btn" data-i18n="nav_more" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
           <div class="nav-more-items">
-            <a href="pages/hospitals.html">🏥 診所</a>
-            <a href="pages/carparks.html">🅿️ 停車場</a>
-            <a href="pages/taxistands.html">🚕 的士站</a>
-            <a href="pages/ferries.html">⛴️ 渡輪碼頭</a>
-            <a href="pages/postoffices.html">📮 郵政局</a>
-            <a href="pages/beaches.html">🏖️ 泳灘</a>
-            <a href="pages/weather.html">🌤️ 天氣</a>
+            <a href="pages/hospitals-list.html" data-i18n="nav_hospitals">🏥 診所</a>
+            <a href="pages/carparks-list.html" data-i18n="nav_carparks">🅿️ 停車場</a>
+            <a href="pages/taxistands-list.html" data-i18n="nav_taxistands">🚕 的士站</a>
+            <a href="pages/ferries-list.html" data-i18n="nav_ferries">⛴️ 渡輪碼頭</a>
+            <a href="pages/postoffices-list.html" data-i18n="nav_postoffices">📮 郵政局</a>
+            <a href="pages/beaches-list.html" data-i18n="nav_beaches">🏖️ 泳灘</a>
+            <a href="pages/weather.html" data-i18n="nav_weather">🌤️ 天氣</a>
           </div>
         </div>
       </div>
     </div>
   </nav>
 
-  <section class="hero hero-box">
+  <section class="hero hero-box reveal">
     <div class="container">
       <h1>香港旅遊便利站</h1>
       <p>打開便利寶盒 · 暢遊香港無障礙</p>
@@ -54,78 +59,79 @@
   </section>
 
   <main class="container">
-    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-700);margin-bottom:8px;">📦 便利寶盒</h3>
-    <div class="box-net box-net-6">
+    <h3 class="reveal-up" style="font-size:1rem;font-weight:700;color:var(--gray-700);margin-bottom:8px;" data-i18n="box_primary_title">📦 便利寶盒</h3>
+    <div class="box-net box-net-6 reveal-stagger">
       <a href="pages/toilet.html" class="box-card" style="--c:#2563eb;">
         <div class="box-card-icon">🚽</div>
-        <div class="box-card-title">廁所</div>
-        <div class="box-card-desc">公廁位置與評價</div>
+        <div class="box-card-title" data-i18n="box_toilet">廁所</div>
+        <div class="box-card-desc" data-i18n="box_toilet_desc">公廁位置與評價</div>
       </a>
       <a href="pages/wifi.html" class="box-card" style="--c:#059669;">
         <div class="box-card-icon">📶</div>
-        <div class="box-card-title">WiFi</div>
-        <div class="box-card-desc">免費上網熱點</div>
+        <div class="box-card-title" data-i18n="box_wifi">WiFi</div>
+        <div class="box-card-desc" data-i18n="box_wifi_desc">免費上網熱點</div>
       </a>
-      <a href="pages/carparks.html" class="box-card" style="--c:#1e3a5f;">
+      <a href="pages/carparks-list.html" class="box-card" style="--c:#1e3a5f;">
         <div class="box-card-icon">🅿️</div>
-        <div class="box-card-title">停車場</div>
-        <div class="box-card-desc">停車場位置</div>
+        <div class="box-card-title" data-i18n="box_carpark">停車場</div>
+        <div class="box-card-desc" data-i18n="box_carpark_desc">停車場位置</div>
       </a>
-      <a href="pages/hospitals.html" class="box-card" style="--c:#dc2626;">
+      <a href="pages/hospitals-list.html" class="box-card" style="--c:#dc2626;">
         <div class="box-card-icon">🏥</div>
-        <div class="box-card-title">診所</div>
-        <div class="box-card-desc">醫院診所位置</div>
+        <div class="box-card-title" data-i18n="box_hospital">診所</div>
+        <div class="box-card-desc" data-i18n="box_hospital_desc">醫院診所位置</div>
       </a>
-      <a href="pages/taxistands.html" class="box-card" style="--c:#d97706;">
+      <a href="pages/taxistands-list.html" class="box-card" style="--c:#d97706;">
         <div class="box-card-icon">🚕</div>
-        <div class="box-card-title">的士站</div>
-        <div class="box-card-desc">的士站位置</div>
+        <div class="box-card-title" data-i18n="box_taxi">的士站</div>
+        <div class="box-card-desc" data-i18n="box_taxi_desc">的士站位置</div>
       </a>
       <a href="pages/rest.html" class="box-card" style="--c:#7c3aed;">
         <div class="box-card-icon">🪑</div>
-        <div class="box-card-title">休息區</div>
-        <div class="box-card-desc">商場公園圖書館休息點</div>
+        <div class="box-card-title" data-i18n="box_rest">休息區</div>
+        <div class="box-card-desc" data-i18n="box_rest_desc">商場公園圖書館休息點</div>
       </a>
     </div>
 
-    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-700);margin:20px 0 8px;">📦 更多便利</h3>
-    <div class="box-net box-net-4">
-      <a href="pages/ferries.html" class="box-card" style="--c:#0ea5e9;">
+    <h3 class="reveal-up" style="font-size:1rem;font-weight:700;color:var(--gray-700);margin:20px 0 8px;" data-i18n="box_secondary_title">📦 更多便利</h3>
+    <div class="box-net box-net-6 reveal-stagger">
+      <a href="pages/ferries-list.html" class="box-card" style="--c:#0ea5e9;">
         <div class="box-card-icon">⛴️</div>
-        <div class="box-card-title">渡輪碼頭</div>
-        <div class="box-card-desc">渡輪碼頭位置</div>
+        <div class="box-card-title" data-i18n="box_ferry">渡輪碼頭</div>
+        <div class="box-card-desc" data-i18n="box_ferry_desc">渡輪碼頭位置</div>
       </a>
-      <a href="pages/postoffices.html" class="box-card" style="--c:#dc2626;">
+      <a href="pages/postoffices-list.html" class="box-card" style="--c:#dc2626;">
         <div class="box-card-icon">📮</div>
-        <div class="box-card-title">郵政局</div>
-        <div class="box-card-desc">郵政局位置</div>
+        <div class="box-card-title" data-i18n="box_postoffice">郵政局</div>
+        <div class="box-card-desc" data-i18n="box_postoffice_desc">郵政局位置</div>
       </a>
-      <a href="pages/beaches.html" class="box-card" style="--c:#b45309;">
+      <a href="pages/beaches-list.html" class="box-card" style="--c:#b45309;">
         <div class="box-card-icon">🏖️</div>
-        <div class="box-card-title">泳灘</div>
-        <div class="box-card-desc">泳灘位置</div>
+        <div class="box-card-title" data-i18n="box_beach">泳灘</div>
+        <div class="box-card-desc" data-i18n="box_beach_desc">泳灘位置</div>
       </a>
       <a href="pages/weather.html" class="box-card" style="--c:#f59e0b;">
         <div class="box-card-icon">🌤️</div>
-        <div class="box-card-title">天氣</div>
-        <div class="box-card-desc">即時天氣</div>
+        <div class="box-card-title" data-i18n="box_weather">天氣</div>
+        <div class="box-card-desc" data-i18n="box_weather_desc">即時天氣</div>
       </a>
     </div>
 
-    <div class="ad-placeholder">
-      📢 廣告招商 — 你的廣告在這裡 (請聯繫我們)
+    <div class="ad-placeholder" style="padding:0;border:none;background:transparent;">
+      <!-- AdSense ad unit will appear here -->
+      <div style="text-align:center;color:var(--gray-400);font-size:0.8rem;padding:12px;">📢 Ad Space · <span data-i18n="ad_placeholder">廣告招商 — 請聯繫我們</span></div>
     </div>
 
-    <section style="padding: 16px 0 24px;">
-      <h3 style="font-size:1.1rem; margin-bottom:12px; color:var(--gray-700);">💡 旅客小貼士</h3>
+    <section class="reveal-up" style="padding: 16px 0 24px;">
+      <h3 style="font-size:1.1rem; margin-bottom:12px; color:var(--gray-700);" data-i18n="tips_title">💡 旅客小貼士</h3>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;">
+        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;" data-i18n="tip1">
           <strong>🚽 急找廁所？</strong> 港鐵站內大部分都有公廁，入閘前可免费使用
         </div>
-        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;">
+        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;" data-i18n="tip2">
           <strong>📶 免費 WiFi</strong> 政府 GovWiFi 覆蓋主要景點，每次連線 45 分鐘
         </div>
-        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;">
+        <div style="background:var(--white);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-sm);font-size:0.9rem;" data-i18n="tip3">
           <strong>🅿️ 泊車</strong> 停車場繁忙時段可選附近月租車位，節省等候時間
         </div>
       </div>
@@ -134,19 +140,21 @@
 
   <footer>
     <div class="container">
-      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p data-i18n="footer_copyright">© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;" data-i18n="footer_attribution_home">資料來源：食物環境衞生署、政府WiFi計劃、地政總署 iGeoCom、醫院管理局、運輸署、康樂及文化事務署、香港天文台</p>
       <div class="footer-links">
-        <a href="index.html">首頁</a>
-        <a href="pages/toilet.html">廁所</a>
-        <a href="pages/wifi.html">WiFi</a>
-        <a href="pages/rest.html">休息</a>
-        <a href="pages/hospitals.html">診所</a>
-        <a href="pages/carparks.html">停車場</a>
-        <a href="pages/taxistands.html">的士站</a>
-        <a href="pages/ferries.html">渡輪碼頭</a>
-        <a href="pages/postoffices.html">郵政局</a>
-        <a href="pages/beaches.html">泳灘</a>
-        <a href="pages/weather.html">天氣</a>
+        <a href="index.html" data-i18n="nav_home">首頁</a>
+        <a href="pages/toilet.html" data-i18n="nav_toilet">廁所</a>
+        <a href="pages/wifi.html" data-i18n="nav_wifi">WiFi</a>
+        <a href="pages/rest.html" data-i18n="nav_rest">休息</a>
+        <a href="pages/hospitals-list.html" data-i18n="nav_hospitals">診所</a>
+        <a href="pages/carparks-list.html" data-i18n="nav_carparks">停車場</a>
+        <a href="pages/taxistands-list.html" data-i18n="nav_taxistands">的士站</a>
+        <a href="pages/ferries-list.html" data-i18n="nav_ferries">渡輪碼頭</a>
+        <a href="pages/postoffices-list.html" data-i18n="nav_postoffices">郵政局</a>
+        <a href="pages/beaches-list.html" data-i18n="nav_beaches">泳灘</a>
+        <a href="pages/weather.html" data-i18n="nav_weather">天氣</a>
+        <a href="pages/bus-fav.html" data-i18n="nav_bus_fav">⭐ 常用路線</a>
       </div>
     </div>
   </footer>
