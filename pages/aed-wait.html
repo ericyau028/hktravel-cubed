@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🏥 急症室輪候時間 — 香港旅遊便利站</title>
+  <meta name="description" content="香港全港 18 間公立醫院急症室即時輪候時間，分 T1-T4 級別顯示，每 15 分鐘更新，幫你選擇最快的急症室。">
+  <link rel="canonical" href="https://hk.cubedhub.com/pages/aed-wait.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-132PFXDSM9"></script>
+  <meta name="google-adsense-account" content="ca-pub-4900630860092971">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4900630860092971" crossorigin="anonymous"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-132PFXDSM9');
+  </script>
+  <script src="../js/search.js" defer></script>
+  <script src="../js/i18n.js" defer></script>
+  <script src="../js/animations.js" defer></script>
+  <style>
+    .spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      gap: 16px;
+    }
+    .spinner-ring {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .aed-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+      color: #dc2626;
+      font-size: 0.9rem;
+      margin: 16px 0;
+    }
+    .aed-error.show { display: block; }
+    .aed-content { display: none; }
+    .aed-content.show { display: block; }
+    .aed-updatetime {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+    .tier-info {
+      background: var(--blue-light);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+      color: var(--gray-700);
+      line-height: 1.7;
+    }
+    .tier-info strong { color: var(--blue); }
+    .aed-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .aed-tab {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--gray-200);
+      background: var(--white);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .aed-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .aed-hospital {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .aed-hosp-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      flex: 1;
+      min-width: 0;
+    }
+    .aed-hosp-sub { font-size: 0.7rem; color: var(--gray-400); font-weight: 400; margin-top: 2px; }
+    .aed-wait-main {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .aed-wait-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .aed-wait-label { font-size: 0.65rem; color: var(--gray-500); margin-top: 2px; }
+    .c-short { color: var(--green); }
+    .c-medium { color: var(--amber); }
+    .c-long { color: var(--red); }
+    .aed-detail {
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-top: 10px;
+      display: none;
+      font-size: 0.78rem;
+      color: var(--gray-600);
+      line-height: 1.8;
+    }
+    .aed-detail.open { display: block; }
+    .aed-hospital.expanded { cursor: pointer; }
+    .aed-detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 12px; }
+    .aed-detail-grid b { color: var(--gray-700); }
+    .retry-btn {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+    }
+    .retry-btn:hover { background: var(--blue-dark); }
+    .aed-legend { display: flex; gap: 14px; justify-content: center; margin: 10px 0 4px; font-size: 0.72rem; color: var(--gray-500); flex-wrap: wrap; }
+    .aed-legend span { display: flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="container">
+      <a href="#" data-lang="zh-Hant">繁體</a>
+      <a href="#" data-lang="zh-Hans">簡體</a>
+      <a href="#" data-lang="en">English</a>
+    </div>
+  </div>
+
+  <nav>
+    <div class="container">
+      <a href="../index.html" class="nav-brand">香港旅遊<span>便利站</span></a>
+      <button class="nav-toggle" aria-label="選單">☰</button>
+      <div class="nav-menu">
+        <a href="../index.html" data-i18n="nav_home"><span class="nav-icon">🏠</span> 首頁</a>
+        <a href="toilet.html" data-i18n="nav_toilet"><span class="nav-icon">🚽</span> 廁所</a>
+        <a href="wifi.html" data-i18n="nav_wifi"><span class="nav-icon">📶</span> WiFi</a>
+        <a href="rest.html" data-i18n="nav_rest"><span class="nav-icon">🪑</span> 休息</a>
+        <a href="bus-fav.html" data-i18n="nav_bus_fav"><span class="nav-icon">⭐</span> 常用</a>
+        <div class="nav-more">
+          <button class="nav-more-btn" data-i18n="nav_more" onclick="this.parentElement.classList.toggle('open')"><span class="nav-icon">⋯</span> 更多 <span class="nav-arrow">▾</span></button>
+          <div class="nav-more-items">
+            <a href="hospitals-list.html" data-i18n="nav_hospitals">🏥 診所</a>
+            <a href="aed-wait.html" class="active" data-i18n="nav_aed">🚑 急症室</a>
+            <a href="carparks-list.html" data-i18n="nav_carparks">🅿️ 停車場</a>
+            <a href="taxistands-list.html" data-i18n="nav_taxistands">🚕 的士站</a>
+            <a href="ferries-list.html" data-i18n="nav_ferries">⛴️ 渡輪碼頭</a>
+            <a href="postoffices-list.html" data-i18n="nav_postoffices">📮 郵政局</a>
+            <a href="beaches-list.html" data-i18n="nav_beaches">🏖️ 泳灘</a>
+            <a href="weather.html" data-i18n="nav_weather">🌤️ 天氣</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-header">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="../index.html" data-i18n="breadcrumb_home">首頁</a> &gt; <span>🚑 急症室輪候</span>
+      </div>
+      <h2>🚑 急症室輪候時間</h2>
+      <p>全港 18 間公立醫院急症室即時輪候 — 每 15 分鐘更新</p>
+    </div>
+  </section>
+
+  <main class="container" style="padding-bottom:24px;">
+    <div class="ad-slot">
+      <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-4900630860092971" data-ad-slot="6428216085"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="tier-info">
+      💡 <strong>急症室分流制度（Triage）</strong>：病人到診後會依病情嚴重程度分為 5 級 — T1 危急、T2 緊急、T3 緊急但非危急、T4 次緊急、T5 非緊急。以下顯示 T1-T4 的預估輪候時間，數字僅供參考，實際以醫院現場為準。
+    </div>
+
+    <div id="spinner" class="spinner">
+      <div class="spinner-ring"></div>
+      <span style="font-size:0.85rem;color:var(--gray-500);">載入急症室資料中...</span>
+    </div>
+
+    <div id="errorContainer" class="aed-error">
+      <p>⚠️ 無法載入急症室輪候資料</p>
+      <p style="font-size:0.82rem;color:#9ca3af;margin-top:4px;" id="errorMessage"></p>
+      <button class="retry-btn" onclick="loadAED()">重新載入</button>
+    </div>
+
+    <div id="aedContent" class="aed-content">
+      <div id="updateTime" class="aed-updatetime"></div>
+
+      <div class="aed-tabs" id="tierTabs">
+        <button class="aed-tab active" data-tier="T3">T3 非緊急</button>
+        <button class="aed-tab" data-tier="T4">T4 次緊急</button>
+        <button class="aed-tab" data-tier="T2">T2 緊急</button>
+        <button class="aed-tab" data-tier="T1">T1 危急</button>
+      </div>
+
+      <div class="aed-legend">
+        <span><span class="legend-dot" style="background:var(--green);"></span> 短</span>
+        <span><span class="legend-dot" style="background:var(--amber);"></span> 中等</span>
+        <span><span class="legend-dot" style="background:var(--red);"></span> 長</span>
+      </div>
+
+      <div id="hospitalList"></div>
+
+      <p style="text-align:center;font-size:0.72rem;color:var(--gray-400);margin-top:14px;">點擊醫院可查看各分流級別完整輪候時間</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© 2026 香港旅遊便利站 | 資料僅供參考，實際情況以現場為準</p>
+      <p style="font-size:0.75rem;color:var(--gray-400);margin-top:4px;">資料來源：醫院管理局 急症室輪候時間開放資料</p>
+      <div class="footer-links">
+        <a href="../index.html" data-i18n="nav_home">首頁</a>
+        <a href="toilet.html" data-i18n="nav_toilet">廁所</a>
+        <a href="wifi.html" data-i18n="nav_wifi">WiFi</a>
+        <a href="rest.html" data-i18n="nav_rest">休息</a>
+        <a href="hospitals-list.html" data-i18n="nav_hospitals">診所</a>
+        <a href="aed-wait.html" data-i18n="nav_aed">🚑 急症室</a>
+        <a href="carparks-list.html" data-i18n="nav_carparks">停車場</a>
+        <a href="taxistands-list.html" data-i18n="nav_taxistands">的士站</a>
+        <a href="ferries-list.html" data-i18n="nav_ferries">渡輪碼頭</a>
+        <a href="postoffices-list.html" data-i18n="nav_postoffices">郵政局</a>
+        <a href="beaches-list.html" data-i18n="nav_beaches">泳灘</a>
+        <a href="weather.html" data-i18n="nav_weather">天氣</a>
+        <a href="bus-fav.html" data-i18n="nav_bus_fav">⭐ 常用路線</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    var currentTier = 'T3';
+    var aedData = null;
+    var autoTimer = null;
+
+    function tierValue(hosp, tier) {
+      switch (tier) {
+        case 'T1': return parseTime(hosp.t1wt);
+        case 'T2': return parseTime(hosp.t2wt);
+        case 'T3': return parseTime(hosp.t3p50);
+        case 'T4': return parseTime(hosp.t45p50);
+      }
+      return 9999;
+    }
+
+    function tierText(hosp, tier) {
+      switch (tier) {
+        case 'T1': return hosp.t1wt || '--';
+        case 'T2': return hosp.t2wt || '--';
+        case 'T3': return hosp.t3p50 || '--';
+        case 'T4': return hosp.t45p50 || '--';
+      }
+      return '--';
+    }
+
+    function parseTime(str) {
+      if (!str) return 9999;
+      str = String(str);
+      var total = 0;
+      var h = str.match(/([\d.]+)\s*(小時|hour|hours)/i);
+      var m = str.match(/([\d.]+)\s*(分鐘|minute|minutes)/i);
+      var lt = str.indexOf('少於') !== -1 || /less than/i.test(str);
+      if (h) total += parseFloat(h[1]) * 60;
+      if (m) total += parseFloat(m[1]);
+      if (lt) total = Math.max(1, Math.min(total, 15));
+      return total;
+    }
+
+    function colorClass(val) {
+      if (val === 9999) return '';
+      if (val <= 30) return 'c-short';
+      if (val <= 90) return 'c-medium';
+      return 'c-long';
+    }
+
+    function formatUpdateTime(str) {
+      if (!str) return '';
+      return '更新時間：' + str;
+    }
+
+    function render() {
+      var list = document.getElementById('hospitalList');
+      if (!aedData || !aedData.waitTime) {
+        list.innerHTML = '<p style="text-align:center;color:var(--gray-500);font-size:0.85rem;padding:20px;">暫無資料</p>';
+        return;
+      }
+      var items = aedData.waitTime.slice().sort(function(a, b) {
+        return tierValue(a, currentTier) - tierValue(b, currentTier);
+      });
+      var html = '';
+      items.forEach(function(hosp) {
+        var val = tierValue(hosp, currentTier);
+        var cls = colorClass(val);
+        var text = tierText(hosp, currentTier);
+        var detail = '<div class="aed-detail-grid">' +
+          '<span><b>T1 危急：</b>' + (hosp.t1wt || '--') + '</span>' +
+          '<span><b>T2 緊急：</b>' + (hosp.t2wt || '--') + '</span>' +
+          '<span><b>T3 中位：</b>' + (hosp.t3p50 || '--') + '</span>' +
+          '<span><b>T3 95%：</b>' + (hosp.t3p95 || '--') + '</span>' +
+          '<span><b>T4 中位：</b>' + (hosp.t45p50 || '--') + '</span>' +
+          '<span><b>T4 95%：</b>' + (hosp.t45p95 || '--') + '</span>' +
+          '</div>';
+        html += '<div class="aed-hospital" onclick="toggleDetail(this)">' +
+          '<div class="aed-hosp-name">' + hosp.hospName +
+            '<div class="aed-hosp-sub">點擊看全部級別</div>' +
+          '</div>' +
+          '<div class="aed-wait-main">' +
+            '<div class="aed-wait-value ' + cls + '">' + text + '</div>' +
+            '<div class="aed-wait-label">' + tierLabel(currentTier) + ' 預估</div>' +
+          '</div>' +
+          '</div>' +
+          '<div class="aed-detail">' + detail + '</div>';
+      });
+      list.innerHTML = html;
+      document.getElementById('updateTime').textContent = formatUpdateTime(aedData.updateTime);
+    }
+
+    function tierLabel(tier) {
+      switch (tier) {
+        case 'T1': return 'T1 危急';
+        case 'T2': return 'T2 緊急';
+        case 'T3': return 'T3 非緊急';
+        case 'T4': return 'T4 次緊急';
+      }
+      return tier;
+    }
+
+    function toggleDetail(el) {
+      var detail = el.nextElementSibling;
+      if (detail && detail.classList.contains('aed-detail')) {
+        detail.classList.toggle('open');
+      }
+    }
+
+    function switchTier(tier) {
+      currentTier = tier;
+      document.querySelectorAll('.aed-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-tier') === tier);
+      });
+      render();
+    }
+
+    function loadAED() {
+      var spinner = document.getElementById('spinner');
+      var errorContainer = document.getElementById('errorContainer');
+      var aedContent = document.getElementById('aedContent');
+      spinner.style.display = 'flex';
+      errorContainer.classList.remove('show');
+      aedContent.classList.remove('show');
+
+      fetch('https://www.ha.org.hk/opendata/aed/aedwtdata2-tc.json')
+        .then(function(r) { if (!r.ok) throw new Error('API error'); return r.json(); })
+        .then(function(data) {
+          aedData = data;
+          render();
+          spinner.style.display = 'none';
+          aedContent.classList.add('show');
+        })
+        .catch(function(err) {
+          spinner.style.display = 'none';
+          document.getElementById('errorMessage').textContent = err.message || '請稍後再試';
+          errorContainer.classList.add('show');
+        });
+    }
+
+    document.querySelectorAll('.aed-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() { switchTier(this.getAttribute('data-tier')); });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAED();
+      autoTimer = setInterval(function() {
+        if (!document.hidden) loadAED();
+      }, 300000);
+    });
+
+    document.querySelector('.nav-toggle').addEventListener('click', function() {
+      document.querySelector('.nav-menu').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

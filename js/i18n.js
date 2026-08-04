@@ -20,6 +20,7 @@ var LANG = (function() {
       'nav_postoffices': '郵政局',
       'nav_beaches': '泳灘',
       'nav_weather': '天氣',
+      'nav_aed': '🚑 急症室',
       // Hero
       'hero_title': '香港旅遊便利站',
       'hero_subtitle': '打開便利寶盒 · 暢遊香港無障礙',
@@ -187,6 +188,7 @@ var LANG = (function() {
       'nav_postoffices': '邮政局',
       'nav_beaches': '泳滩',
       'nav_weather': '天气',
+      'nav_aed': '🚑 急症室',
       'hero_title': '香港旅游便利站',
       'hero_subtitle': '打开便利宝盒 · 畅游香港无障碍',
       'box_primary_title': '📦 便利宝盒',
@@ -335,6 +337,7 @@ var LANG = (function() {
       'nav_postoffices': 'Post Offices',
       'nav_beaches': 'Beaches',
       'nav_weather': 'Weather',
+      'nav_aed': '🚑 Emergency Room',
       'hero_title': 'HK Travel Guide',
       'hero_subtitle': 'Open the convenience box · Explore Hong Kong without barriers',
       'box_primary_title': '📦 Convenience Box',
